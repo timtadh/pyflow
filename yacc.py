@@ -1,226 +1,262 @@
 import ply.yacc as yacc
 from lex import C_Lexer
 
-def p_rest(p):
-    '''
-primary_expr : identifier
-    | CONSTANT
-    | STRING_LITERAL
-    | '(' expr ')'
-    
+def p_primary_expr(p):
+    '''primary_expr : identifier
+                    | CONSTANT
+                    | STRING_LITERAL
+                    | '(' expr ')' '''
+    pass
 
-postfix_expr : primary_expr
-    | postfix_expr '[' expr ']'
-    | postfix_expr '(' ')'
-    | postfix_expr '(' argument_expr_list ')'
-    | postfix_expr '.' identifier
-    | postfix_expr PTR_OP identifier
-    | postfix_expr INC_OP
-    | postfix_expr DEC_OP
-    
+def p_postfix_expr(p):
+    '''postfix_expr : primary_expr
+                    | postfix_expr '[' expr ']'
+                    | postfix_expr '(' ')'
+                    | postfix_expr '(' argument_expr_list ')'
+                    | postfix_expr '.' identifier
+                    | postfix_expr PTR_OP identifier
+                    | postfix_expr INC_OP
+                    | postfix_expr DEC_OP'''
+    pass
 
-argument_expr_list : assignment_expr
-    | argument_expr_list ',' assignment_expr
-    
+def p_argument_expr_list(p):
+    '''argument_expr_list : assignment_expr
+                          | argument_expr_list ',' assignment_expr'''
+    pass
 
-unary_expr : postfix_expr
-    | INC_OP unary_expr
-    | DEC_OP unary_expr
-    | unary_operator cast_expr
-    | SIZEOF unary_expr
-    | SIZEOF '(' type_name ')'
-    
+def p_unary_expr(p):
+    '''unary_expr : postfix_expr
+                  | INC_OP unary_expr
+                  | DEC_OP unary_expr
+                  | unary_operator cast_expr
+                  | SIZEOF unary_expr
+                  | SIZEOF '(' type_name ')' '''
+    pass
 
-unary_operator : '&'
-    | '*'
-    | '+'
-    | '-'
-    | '~'
-    | '!'
-    
+def p_unary_operator(p):
+    '''unary_operator : '&'
+                      | '*'
+                      | '+'
+                      | '-'
+                      | '~'
+                      | '!' '''
+    pass
 
-cast_expr  : unary_expr
-    | '(' type_name ')' cast_expr
-    
+def p_cast_expr(p):
+    '''cast_expr  : unary_expr
+                  | '(' type_name ')' cast_expr'''
+    pass
 
-multiplicative_expr : cast_expr
-    | multiplicative_expr '*' cast_expr
-    | multiplicative_expr '/' cast_expr
-    | multiplicative_expr '%' cast_expr
-    
+def p_multiplicative_expr(p):
+    '''multiplicative_expr : cast_expr
+                        | multiplicative_expr '*' cast_expr
+                        | multiplicative_expr '/' cast_expr
+                        | multiplicative_expr '%' cast_expr'''
+    pass
 
-additive_expr : multiplicative_expr
-    | additive_expr '+' multiplicative_expr
-    | additive_expr '-' multiplicative_expr
-    
+def p_additive_expr(p):
+    '''additive_expr : multiplicative_expr
+                     | additive_expr '+' multiplicative_expr
+                     | additive_expr '-' multiplicative_expr'''
+    pass
 
-shift_expr : additive_expr
-    | shift_expr LEFT_OP additive_expr
-    | shift_expr RIGHT_OP additive_expr
-    
+def p_shift_expr(p):
+    '''shift_expr : additive_expr
+        | shift_expr LEFT_OP additive_expr
+        | shift_expr RIGHT_OP additive_expr'''
+    pass
 
-relational_expr : shift_expr
-    | relational_expr '<' shift_expr
-    | relational_expr '>' shift_expr
-    | relational_expr LE_OP shift_expr
-    | relational_expr GE_OP shift_expr
-    
+def p_relational_expr(p):
+    '''relational_expr : shift_expr
+                       | relational_expr '<' shift_expr
+                       | relational_expr '>' shift_expr
+                       | relational_expr LE_OP shift_expr
+                       | relational_expr GE_OP shift_expr'''
+    pass
 
-equality_expr : relational_expr
-    | equality_expr EQ_OP relational_expr
-    | equality_expr NE_OP relational_expr
-    
+def p_equality_expr(p):
+    '''equality_expr : relational_expr
+                     | equality_expr EQ_OP relational_expr
+                     | equality_expr NE_OP relational_expr'''
+    pass
 
-and_expr  : equality_expr
-    | and_expr '&' equality_expr
-    
+def p_and_expr(p):
+    '''and_expr  : equality_expr
+                 | and_expr '&' equality_expr'''
+    pass
 
-exclusive_or_expr : and_expr
-    | exclusive_or_expr '^' and_expr
-    
+def p_exclusive_or_expr(p):
+    '''exclusive_or_expr : and_expr
+                         | exclusive_or_expr '^' and_expr'''
+    pass
 
-inclusive_or_expr : exclusive_or_expr
-    | inclusive_or_expr '|' exclusive_or_expr
-    
+def p_inclusive_or_expr(p):
+    '''inclusive_or_expr : exclusive_or_expr
+                         | inclusive_or_expr '|' exclusive_or_expr'''
+    pass
 
-logical_and_expr : inclusive_or_expr
-    | logical_and_expr AND_OP inclusive_or_expr
-    
+def p_logical_and_expr(p):
+    '''logical_and_expr : inclusive_or_expr
+                        | logical_and_expr AND_OP inclusive_or_expr'''
+    pass
 
-logical_or_expr : logical_and_expr
-    | logical_or_expr OR_OP logical_and_expr
-    
+def p_logical_or_expr(p):
+    '''logical_or_expr : logical_and_expr
+                       | logical_or_expr OR_OP logical_and_expr'''
+    pass
 
-conditional_expr : logical_or_expr
-    | logical_or_expr '?' logical_or_expr ':' conditional_expr
-    
+def p_conditional_expr(p):
+    '''conditional_expr : logical_or_expr
+                        | logical_or_expr '?' logical_or_expr ':' conditional_expr'''
+    pass
 
-assignment_expr : conditional_expr
-    | unary_expr assignment_operator assignment_expr
-    
+def p_assignment_expr(p):
+    '''assignment_expr : conditional_expr
+                       | unary_expr assignment_operator assignment_expr'''
+    pass
 
-assignment_operator : '='
-    | MUL_ASSIGN
-    | DIV_ASSIGN
-    | MOD_ASSIGN
-    | ADD_ASSIGN
-    | SUB_ASSIGN
-    | LEFT_ASSIGN
-    | RIGHT_ASSIGN
-    | AND_ASSIGN
-    | XOR_ASSIGN
-    | OR_ASSIGN
-    
+def p_assignment_operator(p):
+    '''assignment_operator : '='
+                           | MUL_ASSIGN
+                           | DIV_ASSIGN
+                           | MOD_ASSIGN
+                           | ADD_ASSIGN
+                           | SUB_ASSIGN
+                           | LEFT_ASSIGN
+                           | RIGHT_ASSIGN
+                           | AND_ASSIGN
+                           | XOR_ASSIGN
+                           | OR_ASSIGN'''
+    pass
 
-expr : assignment_expr
-    | expr ',' assignment_expr
-    
+def p_expr(p):
+    '''expr : assignment_expr
+            | expr ',' assignment_expr'''
+    pass
 
-constant_expr : conditional_expr
-    
+def p_constant_expr(p):
+    '''constant_expr : conditional_expr'''
+    pass
 
-declaration : declaration_specifiers ''
-    | declaration_specifiers init_declarator_list ''
-    
+def p_declaration(p):
+    '''declaration : declaration_specifiers ''
+                   | declaration_specifiers init_declarator_list ''  '''
+    pass
 
-declaration_specifiers : storage_class_specifier
-    | storage_class_specifier declaration_specifiers
-    | type_specifier
-    | type_specifier declaration_specifiers
-    
+def p_declaration_specifiers(p):
+    '''declaration_specifiers : storage_class_specifier
+                              | storage_class_specifier declaration_specifiers
+                              | type_specifier
+                              | type_specifier declaration_specifiers'''
+    pass
 
-init_declarator_list : init_declarator
-    | init_declarator_list ',' init_declarator
-    
+def p_init_declarator_list(p):
+    '''init_declarator_list : init_declarator
+                            | init_declarator_list ',' init_declarator'''
+    pass
 
-init_declarator : declarator
-    | declarator '=' initializer
-    
+def p_init_declarator(p):
+    '''init_declarator : declarator
+                       | declarator '=' initializer'''
+    pass
 
-storage_class_specifier : TYPEDEF
-    | EXTERN
-    | STATIC
-    | AUTO
-    | REGISTER
-    
+def p_storage_class_specifier(p):
+    '''storage_class_specifier : TYPEDEF
+                               | EXTERN
+                               | STATIC
+                               | AUTO
+                               | REGISTER'''
+    pass
 
-type_specifier : CHAR
-    | SHORT
-    | INT
-    | LONG
-    | SIGNED
-    | UNSIGNED
-    | FLOAT
-    | DOUBLE
-    | CONST
-    | VOLATILE
-    | VOID
-    | struct_or_union_specifier
-    | enum_specifier
-    | TYPE_NAME
-    
+def p_type_specifier(p):
+    '''type_specifier : CHAR
+                      | SHORT
+                      | INT
+                      | LONG
+                      | SIGNED
+                      | UNSIGNED
+                      | FLOAT
+                      | DOUBLE
+                      | CONST
+                      | VOLATILE
+                      | VOID
+                      | struct_or_union_specifier
+                      | enum_specifier
+                      | TYPE_NAME'''
+    pass
 
-struct_or_union_specifier : struct_or_union identifier '{' struct_declaration_list '}'
-    | struct_or_union '{' struct_declaration_list '}'
-    | struct_or_union identifier
-    
+def p_struct_or_union_specifier(p):
+    '''struct_or_union_specifier : struct_or_union identifier '{' struct_declaration_list '}'
+                                 | struct_or_union '{' struct_declaration_list '}'
+                                 | struct_or_union identifier'''
+    pass
 
-struct_or_union : STRUCT
-    | UNION
-    
+def p_struct_or_union(p):
+    '''struct_or_union : STRUCT
+                    | UNION'''
+    pass
 
-struct_declaration_list : struct_declaration
-    | struct_declaration_list struct_declaration
-    
+def p_struct_declaration_list(p):
+    '''struct_declaration_list : struct_declaration
+                            | struct_declaration_list struct_declaration'''
+    pass
 
-struct_declaration : type_specifier_list struct_declarator_list ''
-    
+def p_struct_declaration(p):
+    '''struct_declaration : type_specifier_list struct_declarator_list ''  '''
+    pass
 
-struct_declarator_list : struct_declarator
-    | struct_declarator_list ',' struct_declarator
-    
+def p_struct_declarator_list(p):
+    '''struct_declarator_list : struct_declarator
+                              | struct_declarator_list ',' struct_declarator'''
+    pass
 
-struct_declarator : declarator
-    | ':' constant_expr
-    | declarator ':' constant_expr
-    
+def p_struct_declarator(p):
+    '''struct_declarator : declarator
+                         | ':' constant_expr
+                         | declarator ':' constant_expr'''
+    pass
 
-enum_specifier : ENUM '{' enumerator_list '}'
-    | ENUM identifier '{' enumerator_list '}'
-    | ENUM identifier
-    
+def p_enum_specifier(p):
+    '''enum_specifier : ENUM '{' enumerator_list '}'
+                      | ENUM identifier '{' enumerator_list '}'
+                      | ENUM identifier'''
+    pass
 
-enumerator_list : enumerator
-    | enumerator_list ',' enumerator
-    
+def p_enumerator_list(p):
+    '''enumerator_list : enumerator
+                       | enumerator_list ',' enumerator''' 
+    pass
 
-enumerator : identifier
-    | identifier '=' constant_expr
-    
+def p_enumerator(p):
+    '''enumerator : identifier
+                  | identifier '=' constant_expr'''
+    pass
 
-declarator : declarator2
-    | pointer declarator2
-    
+def p_declarator(p):
+    '''declarator : declarator2
+                | pointer declarator2'''
+    pass
 
-declarator2 : identifier
-    | '(' declarator ')'
-    | declarator2 '[' ']'
-    | declarator2 '[' constant_expr ']'
-    | declarator2 '(' ')'
-    | declarator2 '(' parameter_type_list ')'
-    | declarator2 '(' parameter_identifier_list ')'
-    
+def p_declarator2(p):
+    '''declarator2 : identifier
+                   | '(' declarator ')'
+                   | declarator2 '[' ']'
+                   | declarator2 '[' constant_expr ']'
+                   | declarator2 '(' ')'
+                   | declarator2 '(' parameter_type_list ')'
+                   | declarator2 '(' parameter_identifier_list ')'  '''
+    pass
 
-pointer : '*'
-    | '*' type_specifier_list
-    | '*' pointer
-    | '*' type_specifier_list pointer
-    
+def p_pointer(p):
+    '''pointer : '*'
+               | '*' type_specifier_list
+               | '*' pointer
+               | '*' type_specifier_list pointer'''  
+    pass  
 
-type_specifier_list : type_specifier
-    | type_specifier_list type_specifier
-    
-'''
+def p_type_specifier_list(p):
+    '''type_specifier_list : type_specifier
+                           | type_specifier_list type_specifier'''
     pass
 
 def p_parameter_identifier_list(p):
@@ -378,7 +414,8 @@ def p_function_body(p):
 
 def p_identifier(p):
     '''identifier : IDENTIFIER'''
-    pass
+    print p
+    p[0] = p[1]
 
 def p_error(p):
     print p
