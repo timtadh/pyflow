@@ -1,4 +1,5 @@
 int hello;
+//HELLO;
 hello = 010;
 hello = 123;
 hello = 0xff;

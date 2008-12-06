@@ -123,6 +123,3 @@ class Tokens(object):
     UNSIGNED_INT = 318
     TYPEDEF_CHAR = 319
     TYPEDEF_INT = 320
-
-
-print reserved.get('asdf','ID')
