@@ -11,18 +11,26 @@ from tokens import tokens, Tokens, literals, reserved
 D = r'[0-9]'
 L = r'[a-zA-Z_]'
 H = r'[a-fA-F0-9]'
-E = r'[Ee][+-]?{D}+'
+E = r'[Ee][+-]?(' + D + ')+'
 FS = r'(f|F|l|L)'
-IS = r'(u|U|l|L)*'
+IS = r'(u|U|l|L)'
+
 class C_Lexer(object):
     # List of token names.   This is always required
     tokens = tokens
     literals = literals
     
+    comment = r'(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|(//.*)'
+    @TOKEN(comment)
+    def t_COMMENT(self, token):
+        #print token.lexer.lineno, len(token.value.split('\n')), token.value.split('\n')
+        lines = len(token.value.split('\n')) - 1
+        if lines < 0: lines = 0
+        token.lexer.lineno += lines
+    
     identifier = '(' + L + ')((' + L + ')|(' + D + '))*'
     @TOKEN(identifier)
     def t_IDENTIFIER(self, token):
-        print 'hello', token
         token.type = reserved.get(token.value,'IDENTIFIER')
         return token
     
@@ -33,24 +41,75 @@ class C_Lexer(object):
         token.value = token.value[1]
         return token
     
+    const_hex = '0[xX](' + H + ')+(' + IS + ')?'
+    @TOKEN(const_hex)
+    def t_CONST_HEX(self, token):
+        token.type = 'CONSTANT'
+        token.value = int(token.value, 16)
+        return token
+    
+    const_float1 = '(' + D + ')+' + '(' + E + ')' + '(' + FS + ')?'#{D}+{E}{FS}?
+    @TOKEN(const_float1)
+    def t_CONST_FLOAT1(self, token):
+        token.type = 'CONSTANT'
+        token.value = float(token.value)
+        return token
+    
+    const_float2 = '(' + D + ')*\.(' + D + ')+(' + E + ')?' + '(' + FS + ')?'#{D}*"."{D}+({E})?{FS}?
+    @TOKEN(const_float2)
+    def t_CONST_FLOAT2(self, token):
+        token.type = 'CONSTANT'
+        token.value = float(token.value)
+        return token
+    
+    const_float3 = '(' + D + ')+\.(' + D + ')*(' + E + ')?' + '(' + FS + ')?'#{D}+"."{D}*({E})?{FS}?
+    @TOKEN(const_float3)
+    def t_CONST_FLOAT3(self, token):
+        token.type = 'CONSTANT'
+        token.value = float(token.value)
+        return token
+    
+    const_dec_oct = '(' + D + ')+(' + IS + ')?'
+    @TOKEN(const_dec_oct)
+    def t_CONST_DEC_OCT(self, token):
+        token.type = 'CONSTANT'
+        if len(token.value) > 1 and token.value[0] == '0':
+            token.value = int(token.value, 8)
+        else:
+            token.value = int(token.value, 10)
+        return token
+        
+    string_literal = r'\"(\\.|[^\\"])*\"'
+    @TOKEN(string_literal)
+    def t_STRING_LITERAL(self, token):
+        token.type = 'STRING_LITERAL'
+        token.value = token.value[1:-1]
+        return token;
+    
+    #0[xX]{H}+{IS}?
+    
     # Regular expression rules for simple tokens
-    #t_PLUS    = r'\+'
-    #t_MINUS   = r'-'
-    #t_TIMES   = r'\*'
-    #t_DIVIDE  = r'/'
-    #t_LPAREN  = r'\('
-    #t_RPAREN  = r'\)'
-
-    # A regular expression rule with some action code
-    # Note addition of self parameter since we're in a class
-    #def t_NUMBER(self,t):
-        #r'\d+'
-        #try:
-             #t.value = int(t.value)    
-        #except ValueError:
-             #print "Line %d: Number %s is too large!" % (t.lineno,t.value)
-             #t.value = 0
-        #return t
+    t_RIGHT_ASSIGN = r'>>='
+    t_LEFT_ASSIGN = r'<<='
+    t_ADD_ASSIGN = r'\+='
+    t_SUB_ASSIGN = r'\-='
+    t_MUL_ASSIGN = r'\*='
+    t_DIV_ASSIGN = r'\/='
+    t_MOD_ASSIGN = r'\%='
+    t_AND_ASSIGN = r'\&='
+    t_XOR_ASSIGN = r'\^='
+    t_OR_ASSIGN = r'\|='
+    t_RIGHT_OP = r'>>'
+    t_LEFT_OP = r'<<'
+    t_INC_OP = r'\+\+'
+    t_DEC_OP = r'\-\-'
+    t_PTR_OP = r'\->'
+    t_AND_OP = r'\&\&'
+    t_OR_OP = r'\|\|'
+    t_LE_OP = r'\<='
+    t_GE_OP = r'\>='
+    t_EQ_OP = r'=='
+    t_NE_OP = r'\!='
 
     # Define a rule so we can track line numbers
     def t_newline(self,t):
@@ -58,7 +117,7 @@ class C_Lexer(object):
         t.lexer.lineno += len(t.value)
 
     # A string containing ignored characters (spaces and tabs)
-    t_ignore  = ' \t'
+    t_ignore  = ' \t\v\f'
 
     # Error handling rule
     def t_error(self,t):
@@ -84,12 +143,9 @@ lexer = m.lexer
 
 if __name__ == '__main__':
     # Test it out
-    data = '''
-    int hello;
-    hello = 0;
-    char c;
-    c = 'x';
-    '''
+    f = open('test.c', 'r')
+    data = f.read()
+    f.close()
     
     #3 + 4 * 10
     #+ -20 *2
