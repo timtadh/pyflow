@@ -143,7 +143,7 @@ lexer = m.lexer
 
 if __name__ == '__main__':
     # Test it out
-    f = open('test3.c', 'r')
+    f = open('test.c', 'r')
     data = f.read()
     f.close()
     

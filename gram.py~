@@ -448,7 +448,7 @@ class C_Parser(object):
     
     def p_identifier(self, p):
         '''identifier : IDENTIFIER'''
-        self.top = p[0] = Node(p[1:], 'identifier')
+        self.top = p[0] = Node([type(p[1])], 'identifier')
     
     def p_error(self, p):
         sys.stderr.write('ERROR' + str(p))
