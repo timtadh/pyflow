@@ -49,9 +49,9 @@ def p_cast_expr(p):
 
 def p_multiplicative_expr(p):
     '''multiplicative_expr : cast_expr
-                        | multiplicative_expr '*' cast_expr
-                        | multiplicative_expr '/' cast_expr
-                        | multiplicative_expr '%' cast_expr'''
+                           | multiplicative_expr '*' cast_expr
+                           | multiplicative_expr '/' cast_expr
+                           | multiplicative_expr '%' cast_expr'''
     pass
 
 def p_additive_expr(p):
@@ -62,8 +62,8 @@ def p_additive_expr(p):
 
 def p_shift_expr(p):
     '''shift_expr : additive_expr
-        | shift_expr LEFT_OP additive_expr
-        | shift_expr RIGHT_OP additive_expr'''
+                  | shift_expr LEFT_OP additive_expr
+                  | shift_expr RIGHT_OP additive_expr'''
     pass
 
 def p_relational_expr(p):
