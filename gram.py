@@ -1,5 +1,5 @@
 import ply.yacc as yacc
-from lex import C_Lexer
+from scan import C_Lexer
 
 def p_primary_expr(p):
     '''primary_expr : identifier
