@@ -9,7 +9,7 @@ class Node(object):
         for index,child in enumerate(self.children):
             if child.__class__ != Node:
                 self.children[index] = Node(symbol='"'+str(child)+'"')
-                self.children[index].graph_color = "#8888ff"
+                self.children[index].graph_color = "#6666aa"
         self.symbol = symbol
     
     def traverse(self, node, i=0):
