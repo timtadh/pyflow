@@ -448,7 +448,7 @@ class C_Parser(object):
     
     def p_identifier(self, p):
         '''identifier : IDENTIFIER'''
-        self.top = p[0] = Node([type(p[1])], 'identifier')
+        self.top = p[0] = Node(p[1:], 'identifier')
     
     def p_error(self, p):
         sys.stderr.write('ERROR' + str(p))
@@ -463,7 +463,7 @@ class C_Parser(object):
 
 c_parser = C_Parser()
 c_parser.build()
-f = open('test3.c', 'r')
+f = open('test2.c', 'r')
 data = f.read()
 f.close()
 print c_parser.parse(data)
