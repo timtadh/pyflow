@@ -67,4 +67,4 @@ if __name__ == "__main__":
     f.close()
     top = c_parser.parse(data)
     ast_dot(top, "AST.dot")
-    quit()
+    #dot -Tpdf AST.dot -o AST.pdf -v
