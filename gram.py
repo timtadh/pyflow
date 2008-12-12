@@ -8,7 +8,7 @@ class Node(object):
         self.children = children
         for index,child in enumerate(self.children):
             if child.__class__ != Node:
-                self.children[index] = Node(symbol="'"+str(child)+"'")
+                self.children[index] = Node(symbol='"'+str(child)+'"')
         self.symbol = symbol
     
     def traverse(self, node, i=0):
@@ -462,10 +462,10 @@ class C_Parser(object):
         return self.parser.parse(input=text, lexer=self.lexer, debug=0)
 
 
-
-c_parser = C_Parser()
-c_parser.build()
-f = open('test3.c', 'r')
-data = f.read()
-f.close()
-print c_parser.parse(data).print_out()
+if __name__ == "__main__":
+    c_parser = C_Parser()
+    c_parser.build()
+    f = open('test3.c', 'r')
+    data = f.read()
+    f.close()
+    print c_parser.parse(data).print_out()
