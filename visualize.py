@@ -62,7 +62,7 @@ def ast_dot(root, path, name="AST"):
 if __name__ == "__main__":
     c_parser = gram.C_Parser()
     c_parser.build()
-    f = open('test3.c', 'r')
+    f = open('test2.c', 'r')
     data = f.read()
     f.close()
     top = c_parser.parse(data)
