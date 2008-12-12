@@ -8,7 +8,7 @@ class Node(object):
         self.children = children
         for index,child in enumerate(self.children):
             if child.__class__ != Node:
-                self.children[index] = Node(symbol=str(child))
+                self.children[index] = Node(symbol="'"+str(child)+"'")
         self.symbol = symbol
     
     def traverse(self, node, i=0):
