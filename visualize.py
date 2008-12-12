@@ -1,3 +1,5 @@
+import gram
+
 header_string =     "digraph %s {\n    node [shape=box];\n"
 subgraph_prefix =   "    {\n        rank=same; \n"
 node_string =       "        %s [label=%s];\n"
@@ -56,12 +58,11 @@ def ast_dot(root, path, name="AST"):
     f.write(footer_string)
 
 if __name__ == "__main__":
-    n1 = Node("1", [])
-    n2 = Node("2", [])
-    n3 = Node("3", [n1,n2])
-    n4 = Node("4", [])
-    n5 = Node("5", [Node("8",[])])
-    n6 = Node("6", [])
-    n7 = Node("7", [n4, n5, n6])
-    root = Node("root", [n3, n7])
-    ast_dot(root,"AST.dot")
+    c_parser = gram.C_Parser()
+    c_parser.build()
+    f = open('test3.c', 'r')
+    data = f.read()
+    f.close()
+    top = c_parser.parse(data)
+    ast_dot(top, "AST.dot")
+    quit()
