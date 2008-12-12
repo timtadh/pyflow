@@ -1,11 +1,12 @@
 import gram
 
-header_string =     "digraph %s {\n    node [shape=box];\n"
-subgraph_prefix =   "    {\n        rank=same; \n"
-node_string =       "        %s [label=%s];\n"
-subgraph_postfix =  "    }\n"
-edge_string =       "    %s -> %s;\n"
-footer_string =     "}\n"
+header_string =         "digraph %s {\n    node [shape=box];\n"
+subgraph_prefix =       "    {\n        rank=same; \n"
+node_string_nocolor =   "        %s [label=%s];\n"
+node_string_color =     "        %s [label=%s, style=filled, fillcolor=\"%s\"];\n"
+subgraph_postfix =      "    }\n"
+edge_string =           "    %s -> %s;\n"
+footer_string =         "}\n"
 
 class Node(object):
     """Example node with the proper attributes."""
@@ -35,9 +36,7 @@ def ast_walk_tree(node, rank, subgraph_list=[]):
         
     return subgraph_list
 
-def ast_dot(root, path, name="AST"):    
-
-    
+def ast_dot(root, path, name="AST"):
     f = open(path, 'w')
     f.write(header_string % name)
     
@@ -48,7 +47,10 @@ def ast_dot(root, path, name="AST"):
     for subgraph in subgraph_list:
         f.write(subgraph_prefix)
         for node in subgraph:
-            f.write(node_string % (node.graph_id, str(node)))
+            if hasattr(node,"graph_color"):
+                f.write(node_string_color % (node.graph_id, str(node), node.graph_color))
+            else:
+                f.write(node_string_nocolor % (node.graph_id, str(node)))
         f.write(subgraph_postfix)
     
     for subgraph in subgraph_list:

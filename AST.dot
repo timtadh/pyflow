@@ -1,0 +1,108 @@
+digraph AST {
+    node [shape=box];
+    {
+        rank=same; 
+        1 [label=code];
+    }
+    {
+        rank=same; 
+        2 [label=file];
+    }
+    {
+        rank=same; 
+        3 [label=external_definition];
+    }
+    {
+        rank=same; 
+        4 [label=function_definition];
+    }
+    {
+        rank=same; 
+        5 [label=declaration_specifiers];
+        8 [label=declarator];
+        15 [label=function_body];
+    }
+    {
+        rank=same; 
+        6 [label=type_specifier];
+        9 [label=declarator2];
+        16 [label=compound_statement];
+    }
+    {
+        rank=same; 
+        7 [label="int"];
+        10 [label=declarator2];
+        13 [label="("];
+        14 [label=")"];
+        17 [label=left_bracket];
+        19 [label=declaration_list];
+        31 [label=right_bracket];
+    }
+    {
+        rank=same; 
+        11 [label=identifier];
+        18 [label="{"];
+        20 [label=declaration];
+        32 [label="}"];
+    }
+    {
+        rank=same; 
+        12 [label="main"];
+        21 [label=declaration_specifiers];
+        24 [label=init_declarator_list];
+        30 [label=";"];
+    }
+    {
+        rank=same; 
+        22 [label=type_specifier];
+        25 [label=init_declarator];
+    }
+    {
+        rank=same; 
+        23 [label="int"];
+        26 [label=declarator];
+    }
+    {
+        rank=same; 
+        27 [label=declarator2];
+    }
+    {
+        rank=same; 
+        28 [label=identifier];
+    }
+    {
+        rank=same; 
+        29 [label="flags"];
+    }
+    1 -> 2;
+    2 -> 3;
+    3 -> 4;
+    4 -> 5;
+    4 -> 8;
+    4 -> 15;
+    5 -> 6;
+    8 -> 9;
+    15 -> 16;
+    6 -> 7;
+    9 -> 10;
+    9 -> 13;
+    9 -> 14;
+    16 -> 17;
+    16 -> 19;
+    16 -> 31;
+    10 -> 11;
+    17 -> 18;
+    19 -> 20;
+    31 -> 32;
+    11 -> 12;
+    20 -> 21;
+    20 -> 24;
+    20 -> 30;
+    21 -> 22;
+    24 -> 25;
+    22 -> 23;
+    25 -> 26;
+    26 -> 27;
+    27 -> 28;
+    28 -> 29;
+}
