@@ -30,10 +30,10 @@ digraph AST {
     }
     {
         rank=same; 
-        7 [label="int"];
+        7 [label="int", style=filled, fillcolor="#6666aa"];
         10 [label=declarator2];
-        13 [label="("];
-        14 [label=")"];
+        13 [label="(", style=filled, fillcolor="#6666aa"];
+        14 [label=")", style=filled, fillcolor="#6666aa"];
         17 [label=left_bracket];
         19 [label=declaration_list];
         31 [label=right_bracket];
@@ -41,16 +41,16 @@ digraph AST {
     {
         rank=same; 
         11 [label=identifier];
-        18 [label="{"];
+        18 [label="{", style=filled, fillcolor="#6666aa"];
         20 [label=declaration];
-        32 [label="}"];
+        32 [label="}", style=filled, fillcolor="#6666aa"];
     }
     {
         rank=same; 
-        12 [label="main"];
+        12 [label="main", style=filled, fillcolor="#6666aa"];
         21 [label=declaration_specifiers];
         24 [label=init_declarator_list];
-        30 [label=";"];
+        30 [label=";", style=filled, fillcolor="#6666aa"];
     }
     {
         rank=same; 
@@ -59,7 +59,7 @@ digraph AST {
     }
     {
         rank=same; 
-        23 [label="int"];
+        23 [label="int", style=filled, fillcolor="#6666aa"];
         26 [label=declarator];
     }
     {
@@ -72,7 +72,7 @@ digraph AST {
     }
     {
         rank=same; 
-        29 [label="flags"];
+        29 [label="flags", style=filled, fillcolor="#6666aa"];
     }
     1 -> 2;
     2 -> 3;
