@@ -1,4 +1,4 @@
 int main()
 {
-    int flags;
+    return 0;
 }

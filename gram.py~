@@ -2,11 +2,58 @@ import ply.yacc as yacc
 import sys
 from scan import C_Lexer
 
+class TerminalSymbol(object):
+    
+    def __init__(self, symbol):
+        self.symbol = symbol
+    
+    def __str__(self): return '"' + str(self.symbol) + '"'
+
+class NonTerminalSymbol(object):
+    
+    def __init__(self, symbol):
+        self.symbol = symbol
+    
+    def __str__(self): return '"' + str(self.symbol) + '"'
+
+class Value(object):
+    
+    def __init__(self, value):
+        self.value = value
+    
+    def __str__(self): return '"' + str(self.value) + '"'
+
 class Node(object):
     
-    def __init__(self, children=[], symbol=''):
-        self.children = children
-        self.symbol = symbol
+    def __init__(self, production=None, symbol=''):
+        if not production:
+            self.children = []
+        else:
+            self.children = production[1:]
+        
+        if production: token_stack = production.lexer.lexmodule.token_stack[:]
+        
+        for index,child in enumerate(self.children):
+            if child.__class__ != Node:
+                n = Node(symbol=TerminalSymbol(child))
+                for token in token_stack:
+                    if token and token.value == child:
+                        if len(token.type) < 2: break
+                        n = Node(symbol=TerminalSymbol(token.type))
+                        n2 = Node(symbol=Value(child))
+                        n2.graph_color = "#88ff88"
+                        n.children.append(n2)
+                        break
+                #if token:
+                    #n = Node(symbol='"' + token.type + ", " + str(token.value) + '"')
+                    #n.children.append(Node(symbol='"'+str(child)+'"'))
+                #else: 
+                    #n = Node(symbol='"'+str(child)+'"')
+                print n
+                self.children[index] = n
+                self.children[index].graph_color = "#8888ff"
+        if production: self.symbol = NonTerminalSymbol(symbol)
+        else: self.symbol = symbol
     
     def traverse(self, node, i=0):
         s = ' '*i + str(node) + '\n'
@@ -30,14 +77,13 @@ class C_Parser(object):
         self.lexer = self.c_lexer.lexer
         self.tokens = self.c_lexer.tokens
         self.literals = self.c_lexer.literals
-        self.top = None
 
     def p_primary_expr(self, p):
         '''primary_expr : identifier
                         | CONSTANT
                         | STRING_LITERAL
                         | '(' expr ')' '''
-        self.top = p[0] = Node(p[1:], 'primary_expr')
+        p[0] = Node(p, 'primary_expr')
     
     def p_postfix_expr(self, p):
         '''postfix_expr : primary_expr
@@ -48,12 +94,12 @@ class C_Parser(object):
                         | postfix_expr PTR_OP identifier
                         | postfix_expr INC_OP
                         | postfix_expr DEC_OP'''
-        self.top = p[0] = Node(p[1:], 'postfix_expr')
+        p[0] = Node(p, 'postfix_expr')
     
     def p_argument_expr_list(self, p):
         '''argument_expr_list : assignment_expr
                             | argument_expr_list ',' assignment_expr'''
-        self.top = p[0] = Node(p[1:], 'argument_expr_list')
+        p[0] = Node(p, 'argument_expr_list')
     
     def p_unary_expr(self, p):
         '''unary_expr : postfix_expr
@@ -62,7 +108,7 @@ class C_Parser(object):
                     | unary_operator cast_expr
                     | SIZEOF unary_expr
                     | SIZEOF '(' type_name ')' '''
-        self.top = p[0] = Node(p[1:], 'unary_expr')
+        p[0] = Node(p, 'unary_expr')
     
     def p_unary_operator(self, p):
         '''unary_operator : '&'
@@ -71,31 +117,31 @@ class C_Parser(object):
                         | '-'
                         | '~'
                         | '!' '''
-        self.top = p[0] = Node(p[1:], 'unary_operator')
+        p[0] = Node(p, 'unary_operator')
     
     def p_cast_expr(self, p):
         '''cast_expr  : unary_expr
                     | '(' type_name ')' cast_expr'''
-        self.top = p[0] = Node(p[1:], 'cast_expr')
+        p[0] = Node(p, 'cast_expr')
     
     def p_multiplicative_expr(self, p):
         '''multiplicative_expr : cast_expr
                             | multiplicative_expr '*' cast_expr
                             | multiplicative_expr '/' cast_expr
                             | multiplicative_expr '%' cast_expr'''
-        self.top = p[0] = Node(p[1:], 'multiplicative_expr')
+        p[0] = Node(p, 'multiplicative_expr')
     
     def p_additive_expr(self, p):
         '''additive_expr : multiplicative_expr
                         | additive_expr '+' multiplicative_expr
                         | additive_expr '-' multiplicative_expr'''
-        self.top = p[0] = Node(p[1:], 'additive_expr')
+        p[0] = Node(p, 'additive_expr')
     
     def p_shift_expr(self, p):
         '''shift_expr : additive_expr
                     | shift_expr LEFT_OP additive_expr
                     | shift_expr RIGHT_OP additive_expr'''
-        self.top = p[0] = Node(p[1:], 'shift_expr')
+        p[0] = Node(p, 'shift_expr')
     
     def p_relational_expr(self, p):
         '''relational_expr : shift_expr
@@ -103,48 +149,48 @@ class C_Parser(object):
                         | relational_expr '>' shift_expr
                         | relational_expr LE_OP shift_expr
                         | relational_expr GE_OP shift_expr'''
-        self.top = p[0] = Node(p[1:], 'relational_expr')
+        p[0] = Node(p, 'relational_expr')
     
     def p_equality_expr(self, p):
         '''equality_expr : relational_expr
                         | equality_expr EQ_OP relational_expr
                         | equality_expr NE_OP relational_expr'''
-        self.top = p[0] = Node(p[1:], 'equality_expr')
+        p[0] = Node(p, 'equality_expr')
     
     def p_and_expr(self, p):
         '''and_expr  : equality_expr
                     | and_expr '&' equality_expr'''
-        self.top = p[0] = Node(p[1:], 'and_expr')
+        p[0] = Node(p, 'and_expr')
     
     def p_exclusive_or_expr(self, p):
         '''exclusive_or_expr : and_expr
                             | exclusive_or_expr '^' and_expr'''
-        self.top = p[0] = Node(p[1:], 'exclusive_or_expr')
+        p[0] = Node(p, 'exclusive_or_expr')
     
     def p_inclusive_or_expr(self, p):
         '''inclusive_or_expr : exclusive_or_expr
                             | inclusive_or_expr '|' exclusive_or_expr'''
-        self.top = p[0] = Node(p[1:], 'inclusive_or_expr')
+        p[0] = Node(p, 'inclusive_or_expr')
     
     def p_logical_and_expr(self, p):
         '''logical_and_expr : inclusive_or_expr
                             | logical_and_expr AND_OP inclusive_or_expr'''
-        self.top = p[0] = Node(p[1:], 'logical_and_expr')
+        p[0] = Node(p, 'logical_and_expr')
     
     def p_logical_or_expr(self, p):
         '''logical_or_expr : logical_and_expr
                         | logical_or_expr OR_OP logical_and_expr'''
-        self.top = p[0] = Node(p[1:], 'logical_or_expr')
+        p[0] = Node(p, 'logical_or_expr')
     
     def p_conditional_expr(self, p):
         '''conditional_expr : logical_or_expr
                             | logical_or_expr '?' logical_or_expr ':' conditional_expr'''
-        self.top = p[0] = Node(p[1:], 'conditional_expr')
+        p[0] = Node(p, 'conditional_expr')
     
     def p_assignment_expr(self, p):
         '''assignment_expr : conditional_expr
                         | unary_expr assignment_operator assignment_expr'''
-        self.top = p[0] = Node(p[1:], 'assignment_expr')
+        p[0] = Node(p, 'assignment_expr')
     
     def p_assignment_operator(self, p):
         '''assignment_operator : '='
@@ -158,38 +204,38 @@ class C_Parser(object):
                             | AND_ASSIGN
                             | XOR_ASSIGN
                             | OR_ASSIGN'''
-        self.top = p[0] = Node(p[1:], 'assignment_operator')
+        p[0] = Node(p, 'assignment_operator')
     
     def p_expr(self, p):
         '''expr : assignment_expr
                 | expr ',' assignment_expr'''
-        self.top = p[0] = Node(p[1:], 'expr')
+        p[0] = Node(p, 'expr')
     
     def p_constant_expr(self, p):
         '''constant_expr : conditional_expr'''
-        self.top = p[0] = Node(p[1:], 'constant_expr')
+        p[0] = Node(p, 'constant_expr')
     
     def p_declaration(self, p):
         '''declaration : declaration_specifiers ';'
                     | declaration_specifiers init_declarator_list ';'  '''
-        self.top = p[0] = Node(p[1:], 'declaration')
+        p[0] = Node(p, 'declaration')
     
     def p_declaration_specifiers(self, p):
         '''declaration_specifiers : storage_class_specifier
                                 | storage_class_specifier declaration_specifiers
                                 | type_specifier
                                 | type_specifier declaration_specifiers'''
-        self.top = p[0] = Node(p[1:], 'declaration_specifiers')
+        p[0] = Node(p, 'declaration_specifiers')
     
     def p_init_declarator_list(self, p):
         '''init_declarator_list : init_declarator
                                 | init_declarator_list ',' init_declarator'''
-        self.top = p[0] = Node(p[1:], 'init_declarator_list')
+        p[0] = Node(p, 'init_declarator_list')
     
     def p_init_declarator(self, p):
         '''init_declarator : declarator
                         | declarator '=' initializer'''
-        self.top = p[0] = Node(p[1:], 'init_declarator')
+        p[0] = Node(p, 'init_declarator')
     
     def p_storage_class_specifier(self, p):
         '''storage_class_specifier : TYPEDEF
@@ -197,7 +243,7 @@ class C_Parser(object):
                                 | STATIC
                                 | AUTO
                                 | REGISTER'''
-        self.top = p[0] = Node(p[1:], 'storage_class_specifier')
+        p[0] = Node(p, 'storage_class_specifier')
     
     def p_type_specifier(self, p):
         '''type_specifier : CHAR
@@ -214,59 +260,59 @@ class C_Parser(object):
                         | struct_or_union_specifier
                         | enum_specifier
                         | TYPE_NAME'''
-        self.top = p[0] = Node(p[1:], 'type_specifier')
+        p[0] = Node(p, 'type_specifier')
     
     def p_struct_or_union_specifier(self, p):
         '''struct_or_union_specifier : struct_or_union identifier '{' struct_declaration_list '}'
                                     | struct_or_union '{' struct_declaration_list '}'
                                     | struct_or_union identifier'''
-        self.top = p[0] = Node(p[1:], 'struct_or_union_specifier')
+        p[0] = Node(p, 'struct_or_union_specifier')
     
     def p_struct_or_union(self, p):
         '''struct_or_union : STRUCT
                         | UNION'''
-        self.top = p[0] = Node(p[1:], 'struct_or_union')
+        p[0] = Node(p, 'struct_or_union')
     
     def p_struct_declaration_list(self, p):
         '''struct_declaration_list : struct_declaration
                                 | struct_declaration_list struct_declaration'''
-        self.top = p[0] = Node(p[1:], 'struct_declaration_list')
+        p[0] = Node(p, 'struct_declaration_list')
     
     def p_struct_declaration(self, p):
         '''struct_declaration : type_specifier_list struct_declarator_list ';'  '''
-        self.top = p[0] = Node(p[1:], 'struct_declaration')
+        p[0] = Node(p, 'struct_declaration')
     
     def p_struct_declarator_list(self, p):
         '''struct_declarator_list : struct_declarator
                                 | struct_declarator_list ',' struct_declarator'''
-        self.top = p[0] = Node(p[1:], 'struct_declarator_list')
+        p[0] = Node(p, 'struct_declarator_list')
     
     def p_struct_declarator(self, p):
         '''struct_declarator : declarator
                             | ':' constant_expr
                             | declarator ':' constant_expr'''
-        self.top = p[0] = Node(p[1:], 'struct_declarator')
+        p[0] = Node(p, 'struct_declarator')
     
     def p_enum_specifier(self, p):
         '''enum_specifier : ENUM '{' enumerator_list '}'
                         | ENUM identifier '{' enumerator_list '}'
                         | ENUM identifier'''
-        self.top = p[0] = Node(p[1:], 'enum_specifier')
+        p[0] = Node(p, 'enum_specifier')
     
     def p_enumerator_list(self, p):
         '''enumerator_list : enumerator
                         | enumerator_list ',' enumerator''' 
-        self.top = p[0] = Node(p[1:], 'enumerator_list')
+        p[0] = Node(p, 'enumerator_list')
     
     def p_enumerator(self, p):
         '''enumerator : identifier
                     | identifier '=' constant_expr'''
-        self.top = p[0] = Node(p[1:], 'enumerator')
+        p[0] = Node(p, 'enumerator')
     
     def p_declarator(self, p):
         '''declarator : declarator2
                     | pointer declarator2'''
-        self.top = p[0] = Node(p[1:], 'declarator')
+        p[0] = Node(p, 'declarator')
     
     def p_declarator2(self, p):
         '''declarator2 : identifier
@@ -276,55 +322,55 @@ class C_Parser(object):
                     | declarator2 '(' ')'
                     | declarator2 '(' parameter_type_list ')'
                     | declarator2 '(' parameter_identifier_list ')'  '''
-        self.top = p[0] = Node(p[1:], 'declarator2')
+        p[0] = Node(p, 'declarator2')
     
     def p_pointer(self, p):
         '''pointer : '*'
                 | '*' type_specifier_list
                 | '*' pointer
                 | '*' type_specifier_list pointer'''  
-        self.top = p[0] = Node(p[1:], 'pointer')  
+        p[0] = Node(p, 'pointer')  
     
     def p_type_specifier_list(self, p):
         '''type_specifier_list : type_specifier
                             | type_specifier_list type_specifier'''
-        self.top = p[0] = Node(p[1:], 'type_specifier_list')
+        p[0] = Node(p, 'type_specifier_list')
     
     def p_parameter_identifier_list(self, p):
         '''parameter_identifier_list : identifier_list
                                     | identifier_list ',' ELIPSIS'''
-        self.top = p[0] = Node(p[1:], 'parameter_identifier_list')
+        p[0] = Node(p, 'parameter_identifier_list')
     
     def p_identifier_list(self, p):
         '''identifier_list : identifier
                         | identifier_list ',' identifier'''
-        self.top = p[0] = Node(p[1:], 'identifier_list')
+        p[0] = Node(p, 'identifier_list')
     
     def p_parameter_type_list(self, p):
         '''parameter_type_list : parameter_list
                             | parameter_list ',' ELIPSIS'''
-        self.top = p[0] = Node(p[1:], 'parameter_type_list')
+        p[0] = Node(p, 'parameter_type_list')
     
     def p_parameter_list(self, p):
         '''parameter_list : parameter_declaration
                         | parameter_list ',' parameter_declaration'''
-        self.top = p[0] = Node(p[1:], 'parameter_list')
+        p[0] = Node(p, 'parameter_list')
     
     def p_parameter_declaration(self, p):
         '''parameter_declaration : type_specifier_list declarator
                                 | type_name'''
-        self.top = p[0] = Node(p[1:], 'parameter_declaration')
+        p[0] = Node(p, 'parameter_declaration')
     
     def p_type_name(self, p):
         '''type_name : type_specifier_list
                     | type_specifier_list abstract_declarator'''
-        self.top = p[0] = Node(p[1:], 'type_name')
+        p[0] = Node(p, 'type_name')
     
     def p_abstract_declarator(self, p):
         '''abstract_declarator : pointer
                             | abstract_declarator2
                             | pointer abstract_declarator2'''
-        self.top = p[0] = Node(p[1:], 'abstract_declarator')
+        p[0] = Node(p, 'abstract_declarator')
     
     def p_abstract_declarator2(self, p):
         '''abstract_declarator2 : '(' abstract_declarator ')'
@@ -336,18 +382,18 @@ class C_Parser(object):
                                 | '(' parameter_type_list ')'
                                 | abstract_declarator2 '(' ')'
                                 | abstract_declarator2 '(' parameter_type_list ')' '''
-        self.top = p[0] = Node(p[1:], 'abstract_declarator2')
+        p[0] = Node(p, 'abstract_declarator2')
     
     def p_initializer(self, p):
         '''initializer : assignment_expr
                     | '{' initializer_list '}'
                     | '{' initializer_list ',' '}' '''
-        self.top = p[0] = Node(p[1:], 'initializer')
+        p[0] = Node(p, 'initializer')
     
     def p_initializer_list(self, p):
         '''initializer_list : initializer
                             | initializer_list ',' initializer'''
-        self.top = p[0] = Node(p[1:], 'initializer_list')
+        p[0] = Node(p, 'initializer_list')
     
     def p_statement(self, p):
         '''statement : labeled_statement
@@ -356,49 +402,49 @@ class C_Parser(object):
                     | selection_statement
                     | iteration_statement
                     | jump_statement'''
-        self.top = p[0] = Node(p[1:], 'statement')
+        p[0] = Node(p, 'statement')
     
     def p_labeled_statement(self, p):
         '''labeled_statement : identifier ':' statement
                             | CASE constant_expr ':' statement
                             | DEFAULT ':' statement'''
-        self.top = p[0] = Node(p[1:], 'labeled_statement')
+        p[0] = Node(p, 'labeled_statement')
     
     def p_left_bracket(self, p):
         '''left_bracket : '{' '''
-        self.top = p[0] = Node(p[1:], 'left_bracket')
+        p[0] = Node(p, 'left_bracket')
         
     def p_right_bracket(self, p):
         '''right_bracket : '}' '''
-        self.top = p[0] = Node(p[1:], 'right_bracket')
+        p[0] = Node(p, 'right_bracket')
     
     def p_compound_statement(self, p):
         '''compound_statement : left_bracket right_bracket
                             | left_bracket statement_list right_bracket
                             | left_bracket declaration_list right_bracket
                             | left_bracket declaration_list statement_list right_bracket'''
-        self.top = p[0] = Node(p[1:], 'compound_statement')
+        p[0] = Node(p, 'compound_statement')
     
     def p_declaration_list(self, p):
         '''declaration_list : declaration
                             | declaration_list declaration'''
-        self.top = p[0] = Node(p[1:], 'declaration_list')
+        p[0] = Node(p, 'declaration_list')
     
     def p_statement_list(self, p):
         '''statement_list : statement
                           | statement_list statement'''
-        self.top = p[0] = Node(p[1:], 'statement_list')
+        p[0] = Node(p, 'statement_list')
     
     def p_expr_statement(self, p):
         '''expression_statement : ';'
                                 | expr ';' '''
-        self.top = p[0] = Node(p[1:], 'expression_statement')
+        p[0] = Node(p, 'expression_statement')
     
     def p_selection_statement(self, p):
         '''selection_statement : IF '(' expr ')' statement
                                | IF '(' expr ')' statement ELSE statement
                                | SWITCH '(' expr ')' statement'''
-        self.top = p[0] = Node(p[1:], 'selection_statement')
+        p[0] = Node(p, 'selection_statement')
     
     def p_iteration_statement(self, p):
         '''iteration_statement : WHILE '(' expr ')' statement
@@ -411,7 +457,7 @@ class C_Parser(object):
                             | FOR '(' expr ';' ';' expr ')' statement
                             | FOR '(' expr ';' expr ';' ')' statement
                             | FOR '(' expr ';' expr ';' expr ')' statement'''
-        self.top = p[0] = Node(p[1:], 'iteration_statement')
+        p[0] = Node(p, 'iteration_statement')
     
     def p_jump_statement(self, p):
         '''jump_statement : GOTO identifier ';'
@@ -419,36 +465,36 @@ class C_Parser(object):
                         | BREAK ';'
                         | RETURN ';'
                         | RETURN expr ';' '''
-        self.top = p[0] = Node(p[1:], 'jump_statement')
+        p[0] = Node(p, 'jump_statement')
     
     def p_code(self, p):
         '''code : file'''
-        self.top = p[0] = Node(p[1:], 'code')
+        p[0] = Node(p, 'code')
     
     def p_file(self, p):
         '''file : external_definition
                 | file external_definition '''
-        self.top = p[0] = Node(p[1:], 'file')
+        p[0] = Node(p, 'file')
     
     def p_external_definition(self, p):
         '''external_definition : function_definition
                                | declaration'''
-        self.top = p[0] = Node(p[1:], 'external_definition')
+        p[0] = Node(p, 'external_definition')
     
     def p_function_definition(self, p):
         '''function_definition : declarator function_body
                                | declaration_specifiers declarator function_body'''
-        self.top = p[0] = Node(p[1:], 'function_definition')
+        p[0] = Node(p, 'function_definition')
     
     def p_function_body(self, p):
         '''function_body : compound_statement
                          | declaration_list compound_statement
         '''
-        self.top = p[0] = Node(p[1:], 'function_body')
+        p[0] = Node(p, 'function_body')
     
     def p_identifier(self, p):
         '''identifier : IDENTIFIER'''
-        self.top = p[0] = Node(p[1:], 'identifier')
+        p[0] = Node(p, 'identifier')
     
     def p_error(self, p):
         sys.stderr.write('ERROR' + str(p))
@@ -460,11 +506,10 @@ class C_Parser(object):
         return self.parser.parse(input=text, lexer=self.lexer, debug=0)
 
 
-
-c_parser = C_Parser()
-c_parser.build()
-f = open('test2.c', 'r')
-data = f.read()
-f.close()
-print c_parser.parse(data)
-print c_parser.top.print_out()
+if __name__ == "__main__":
+    c_parser = C_Parser()
+    c_parser.build()
+    f = open('test3.c', 'r')
+    data = f.read()
+    f.close()
+    print c_parser.parse(data).print_out()

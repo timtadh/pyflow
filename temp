@@ -1,0 +1,104 @@
+@TOKEN(r'>>=')
+    def t_RIGHT_ASSIGN(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'<<=')
+    def t_LEFT_ASSIGN(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\+=')
+    def t_ADD_ASSIGN(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\-=')
+    def t_SUB_ASSIGN(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\*=')
+    def t_MUL_ASSIGN(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\/=')
+    def t_DIV_ASSIGN(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\%=')
+    def t_MOD_ASSIGN(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\&=')
+    def t_AND_ASSIGN(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\^=')
+    def t_XOR_ASSIGN(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\|=')
+    def t_OR_ASSIGN(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'>>')
+    def t_RIGHT_OP(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'<<')
+    def t_LEFT_OP(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\+\+')
+    def t_INC_OP(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\-\-')
+    def t_DEC_OP(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\->')
+    def t_PTR_OP(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\&\&')
+    def t_AND_OP(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\|\|')
+    def t_OR_OP(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\<=')
+    def t_LE_OP(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\>=')
+    def t_GE_OP(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'==')
+    def t_EQ_OP(self, token):
+        self.token = token
+        return token
+
+@TOKEN(r'\!=')
+    def t_NE_OP(self, token):
+        self.token = token
+        return token

@@ -20,6 +20,10 @@ class C_Lexer(object):
     tokens = tokens
     literals = literals
     
+    def __init__(self):
+        self.token_stack = []
+        self.next_token = None
+    
     comment = r'(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|(//.*)'
     @TOKEN(comment)
     def t_COMMENT(self, token):
@@ -127,6 +131,15 @@ class C_Lexer(object):
     # Build the lexer
     def build(self,**kwargs):
         self.lexer = lex.lex(object=self, **kwargs)
+        def h(self, f, *args, **kwargs):
+            def token(*args, **kwargs):
+                '''A decorator on the original token function'''
+                t = f()
+                self.token_stack.append(self.next_token)
+                self.next_token = t
+                return t
+            return token
+        self.lexer.token = h(self, self.lexer.token)
     
     # Test it output
     def test(self,data):
@@ -137,13 +150,13 @@ class C_Lexer(object):
              print tok
 
 # Build the lexer and try it out
-m = C_Lexer()
-m.build()           # Build the lexer
-lexer = m.lexer
+#m = C_Lexer()
+#m.build()           # Build the lexer
+#lexer = m.lexer
 
 if __name__ == '__main__':
     # Test it out
-    f = open('test3.c', 'r')
+    f = open('test.c', 'r')
     data = f.read()
     f.close()
     

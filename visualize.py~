@@ -38,8 +38,7 @@ def ast_walk_tree(node, rank, subgraph_list=[]):
         
     return subgraph_list
 
-def ast_dot(root, path, name="AST"):
-    f = open(path, 'w')
+def ast_dot(root, f, name="AST"):
     f.write(header_string % name)
     
     global node_count
@@ -65,6 +64,6 @@ if __name__ == "__main__":
     c_parser = gram.C_Parser()
     c_parser.build()
     top = c_parser.parse(sys.stdin.read())
-    ast_dot(top, "AST.dot")
+    ast_dot(top, sys.stdout)
     print "Running dot..."
     popen_obj = subprocess.Popen(["dot", "-Tpdf",  "AST.dot",  "-o",  "AST.pdf"])

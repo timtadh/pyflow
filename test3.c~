@@ -1,4 +1,4 @@
 int main()
 {
-    goto flags;
+    int flags;
 }
