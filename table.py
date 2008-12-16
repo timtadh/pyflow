@@ -9,7 +9,7 @@ class SymbolTable(object):
     def create_symbol(self, identifier):
         '''create_symbol(identifier):
             symbol = c_types.Identifier'''
-        if self.table.has_key(identifer.name):
+        if self.table.has_key(identifier.name):
             raise Exception, 'identifier "%s" was already in table' % identifier.name
         self.table.update({identifier.name:identifier})
     

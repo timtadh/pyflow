@@ -63,6 +63,3 @@ class Identifier(object):
         self.value = value
         self.type = type
         self.address = address
-    
-    def __str__(self):
-        return str(self.name) + ' -> ' + str(self.value)
