@@ -20,12 +20,6 @@ class SymbolTable(object):
            returns c_types.Identifier or None if the symbols was not found'''
         if self.table.has_key(name): return self.table[name]
         else: return None
-    
-    def update_symbol(self, identifier):
-        '''update_symbol(identifier):
-            symbol = c_types.Identifier'''
-        if self.table.has_key(identifier.name): self.table[identifier.name] = identifier
-        else: raise Exception, 'identifier "%s" was not in the table' % identifier.name
 
 if __name__ == '__main__':
     symbol_table = SymbolTable()
