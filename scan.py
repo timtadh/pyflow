@@ -42,7 +42,8 @@ class C_Lexer(object):
     @TOKEN(const_char)
     def t_CONST_CHAR(self, token):
         token.type = 'CONSTANT'
-        token.value = token.value[1]
+        print '"' + token.value + '"'
+        token.value = token.value[1:-1]
         return token
     
     const_hex = '0[xX](' + H + ')+(' + IS + ')?'

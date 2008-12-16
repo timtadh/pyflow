@@ -7,21 +7,30 @@ class TerminalSymbol(object):
     def __init__(self, symbol):
         self.symbol = symbol
     
-    def __str__(self): return '"' + str(self.symbol) + '"'
+    def __str__(self): 
+        if self.symbol == '\\':
+            return '"\\' + str(self.symbol) + '"'
+        return '"' + str(self.symbol) + '"'
 
 class NonTerminalSymbol(object):
     
     def __init__(self, symbol):
         self.symbol = symbol
     
-    def __str__(self): return '"' + str(self.symbol) + '"'
+    def __str__(self):
+        if self.symbol == '\\':
+            return '"\\' + str(self.symbol) + '"'
+        return '"' + str(self.symbol) + '"'
 
 class Value(object):
     
     def __init__(self, value):
         self.value = value
     
-    def __str__(self): return '"' + str(self.value) + '"'
+    def __str__(self):
+        if self.value == '\\':
+            return '"\\' + str(self.value) + '"'
+        return '"' + str(self.value) + '"'
 
 class Node(object):
     
