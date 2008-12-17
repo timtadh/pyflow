@@ -1,4 +1,4 @@
-'''Class that represent the AST'''
+'''Classes that represent the AST'''
 
 class TerminalSymbol(object):
     '''Represents a terminal symbol on the AST'''
@@ -28,14 +28,21 @@ class Value(object):
         return str(self.value)
 
 class Attributes(object):
+    '''A container for attributes on the AST. It is basically just an object class with one
+    slight modification. When you try and get an attribute of this class that doesn't exist instead
+    of raising an exception this class return None.'''
     
-    def __init__(self):
-        pass
+    def __init__(self): pass
+    
+    def __getattribute__(self, attr):
+        try: return super(Attributes, self).__getattribute__(attr)
+        except: return None
 
 class Node(object):
     '''Represents a vertice on the AST'''
     
     def __init__(self, production=None, symbol=''):
+        self.attrs = Attributes()
         if not production:
             self.children = []
         else:
@@ -58,8 +65,6 @@ class Node(object):
                 self.children[index].graph_color = "#8888ff"
         if production: self.symbol = NonTerminalSymbol(symbol)
         else: self.symbol = symbol
-        self.type = None
-        self.identifier = None
     
     def traverse(self, node, i=0):
         s = ' '*i + str(node) + '\n'
@@ -75,6 +80,6 @@ class Node(object):
     
     def __str__(self):
         s = str(self.symbol)
-        if self.type: s += ', ' + str(self.type)
-        if self.identifier: s += ', ' + str(self.identifier)
+        if self.attrs.type: s += ', ' + str(self.attrs.type)
+        if self.attrs.identifier: s += ', ' + str(self.attrs.identifier)
         return '"' + s + '"'
