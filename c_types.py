@@ -3,12 +3,13 @@
 class ScalarType(object):
     '''This represents atomic types like int, long, float, char etc...'''
     
-    def __init__(self, type_name, size):
+    def __init__(self, type_name, size, signed=True):
         '''ScalarType(type_name, size):
             type_name = name of the type, ie int, char ....
             size = size in bytes'''
         self.type_name = type_name
         self.size = size
+        self.signed = signed
     
     def __str__(self):
         return '<' + str(self.type_name) + ', ' + str(self.size) + '>'

@@ -3,7 +3,7 @@
 class ScalarType(object):
     '''This represents atomic types like int, long, float, char etc...'''
     
-    def __init__(self, type_name, size):
+    def __init__(self, type_name, size, signed=True):
         '''ScalarType(type_name, size):
             type_name = name of the type, ie int, char ....
             size = size in bytes'''
@@ -67,7 +67,7 @@ class FunctionType(object):
         self.code = code
     
     def __str__(self):
-        return '<' + str(self.name) + ', ' + str(self.size) + ', struct>'
+        return '<' + str(self.name) + ', function>'
 
 class Identifier(object):
     '''Represents an identifier. Each Identifier has a name, value, type and address'''

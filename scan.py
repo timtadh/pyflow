@@ -1,12 +1,8 @@
-# ------------------------------------------------------------
-# calclex.py
-#
-# tokenizer for a simple expression evaluator for
-# numbers and +,-,*,/
-# ------------------------------------------------------------
+'''Defines the lexer for the compiler. Equivalent to lex.l'''
 import ply.lex as lex
 from ply.lex import TOKEN
 from tokens import tokens, Tokens, literals, reserved
+import c_types
 
 D = r'[0-9]'
 L = r'[a-zA-Z_]'
@@ -16,11 +12,20 @@ FS = r'(f|F|l|L)'
 IS = r'(u|U|l|L)'
 
 class C_Lexer(object):
+    '''The lexer object. Defines tokens, literals, and reserved words.
+    Usage:
+        c_lexer = C_Lexer(symbol_table, typedef_table)
+        lexer = c_lexer.build()
+        lexer.input('your input string') 
+        t = lexer.token() #gets the next token'''
+    
     # List of token names.   This is always required
     tokens = tokens
     literals = literals
     
-    def __init__(self):
+    def __init__(self, symbol_table, typedef_table):
+        self.symbol_table = symbol_table
+        self.typedef_table = typedef_table
         self.token_stack = []
         self.next_token = None
     
@@ -35,6 +40,9 @@ class C_Lexer(object):
     identifier = '(' + L + ')((' + L + ')|(' + D + '))*'
     @TOKEN(identifier)
     def t_IDENTIFIER(self, token):
+        if not reserved.has_key(token.value):
+            if not self.symbol_table.find_symbol(token.value):
+                self.symbol_table.create_symbol(c_types.Identifier(token.value))
         token.type = reserved.get(token.value,'IDENTIFIER')
         return token
     
@@ -42,7 +50,6 @@ class C_Lexer(object):
     @TOKEN(const_char)
     def t_CONST_CHAR(self, token):
         token.type = 'CONSTANT'
-        print '"' + token.value + '"'
         token.value = token.value[1:-1]
         return token
     
@@ -129,8 +136,8 @@ class C_Lexer(object):
         print "Illegal character '%s'" % t.value[0]
         t.lexer.skip(1)
 
-    # Build the lexer
     def build(self,**kwargs):
+        '''Build the lexer'''
         self.lexer = lex.lex(object=self, **kwargs)
         def h(self, f, *args, **kwargs):
             def token(*args, **kwargs):
@@ -141,9 +148,9 @@ class C_Lexer(object):
                 return t
             return token
         self.lexer.token = h(self, self.lexer.token)
-    
-    # Test it output
+
     def test(self,data):
+        '''Test function'''
         self.lexer.input(data)
         while 1:
              tok = lexer.token()

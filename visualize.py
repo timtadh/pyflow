@@ -1,6 +1,6 @@
-import gram
 import subprocess
 import sys
+import main
 
 header_string =         "digraph %s {\n    node [shape=box];\n"
 subgraph_prefix =       "    {\n        rank=same; \n"
@@ -62,9 +62,9 @@ def ast_dot(root, path, name="AST"):
     f.write(footer_string)
 
 if __name__ == "__main__":
-    c_parser = gram.C_Parser()
-    c_parser.build()
+    c_parser = main.construct_parser()
     top = c_parser.parse(sys.stdin.read())
     ast_dot(top, "AST.dot")
     print "Running dot..."
-    popen_obj = subprocess.Popen(["dot", "-Tpdf",  "AST.dot",  "-o",  "AST.pdf"])
+    popen_obj = subprocess.Popen(["dot", "-Tpng",  "AST.dot",  "-o",  "AST.png"])
+    print c_parser.symbol_table

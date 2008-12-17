@@ -1,85 +1,20 @@
+'''Defines the grammar and parser for the compiler. Equivalent of yacc.y'''
 import ply.yacc as yacc
 import sys
 from scan import C_Lexer
-
-class TerminalSymbol(object):
-    
-    def __init__(self, symbol):
-        self.symbol = symbol
-    
-    def __str__(self): 
-        if self.symbol == '\\':
-            return '"\\' + str(self.symbol) + '"'
-        return '"' + str(self.symbol) + '"'
-
-class NonTerminalSymbol(object):
-    
-    def __init__(self, symbol):
-        self.symbol = symbol
-    
-    def __str__(self):
-        if self.symbol == '\\':
-            return '"\\' + str(self.symbol) + '"'
-        return '"' + str(self.symbol) + '"'
-
-class Value(object):
-    
-    def __init__(self, value):
-        self.value = value
-    
-    def __str__(self):
-        if self.value == '\\':
-            return '"\\' + str(self.value) + '"'
-        return '"' + str(self.value) + '"'
-
-class Node(object):
-    
-    def __init__(self, production=None, symbol=''):
-        if not production:
-            self.children = []
-        else:
-            self.children = production[1:]
-        
-        if production: token_stack = production.lexer.lexmodule.token_stack[:]
-        
-        for index,child in enumerate(self.children):
-            if child.__class__ != Node:
-                n = Node(symbol=TerminalSymbol(child))
-                for token in token_stack:
-                    if token and token.value == child:
-                        if len(token.type) < 2: break
-                        n = Node(symbol=TerminalSymbol(token.type))
-                        n2 = Node(symbol=Value(child))
-                        n2.graph_color = "#88ff88"
-                        n.children.append(n2)
-                        break
-                self.children[index] = n
-                self.children[index].graph_color = "#8888ff"
-        if production: self.symbol = NonTerminalSymbol(symbol)
-        else: self.symbol = symbol
-    
-    def traverse(self, node, i=0):
-        s = ' '*i + str(node) + '\n'
-        if 'children' not in dir(node): return s
-        for child in node.children:
-            s += self.traverse(child, i+1)
-        return s
-    
-    def print_out(self):
-        return str(self.traverse(self))
-    
-    def __str__(self):
-        return str(self.symbol)
+from ast import *
 
 class C_Parser(object):
     
-    def __init__(self):
+    def __init__(self, symbol_table, typedef_table):
         self.start = 'code'
-        self.c_lexer = C_Lexer()
+        self.c_lexer = C_Lexer(symbol_table, typedef_table)
         self.c_lexer.build()
         self.lexer = self.c_lexer.lexer
         self.tokens = self.c_lexer.tokens
         self.literals = self.c_lexer.literals
+        self.symbol_table = symbol_table
+        self.typedef_table = typedef_table
 
     def p_primary_expr(self, p):
         '''primary_expr : identifier
@@ -228,7 +163,19 @@ class C_Parser(object):
                                 | storage_class_specifier declaration_specifiers
                                 | type_specifier
                                 | type_specifier declaration_specifiers'''
+        if p[1].symbol.symbol == 'type_specifier':
+            if len(p) == 3: 
+                print p[1], p[2]
+                try: type_name = p[1].type.type_name + ' ' + p[2].type.type_name
+                except: type_name = None
+            else:
+                print p[1] 
+                type_name = p[1].type.type_name
+        else: type_name = None
+        print "'" + str(type_name) +"'", self.typedef_table.find_type(type_name)
         p[0] = Node(p, 'declaration_specifiers')
+        p[0].type = self.typedef_table.find_type(type_name)
+        print p[0].type
     
     def p_init_declarator_list(self, p):
         '''init_declarator_list : init_declarator
@@ -237,7 +184,7 @@ class C_Parser(object):
     
     def p_init_declarator(self, p):
         '''init_declarator : declarator
-                        | declarator '=' initializer'''
+                           | declarator '=' initializer'''
         p[0] = Node(p, 'init_declarator')
     
     def p_storage_class_specifier(self, p):
@@ -250,20 +197,25 @@ class C_Parser(object):
     
     def p_type_specifier(self, p):
         '''type_specifier : CHAR
-                        | SHORT
-                        | INT
-                        | LONG
-                        | SIGNED
-                        | UNSIGNED
-                        | FLOAT
-                        | DOUBLE
-                        | CONST
-                        | VOLATILE
-                        | VOID
-                        | struct_or_union_specifier
-                        | enum_specifier
-                        | TYPE_NAME'''
+                          | SHORT
+                          | INT
+                          | LONG
+                          | SIGNED
+                          | UNSIGNED
+                          | FLOAT
+                          | DOUBLE
+                          | CONST
+                          | VOLATILE
+                          | VOID
+                          | struct_or_union_specifier
+                          | enum_specifier
+                          | TYPE_NAME'''
+        type = self.typedef_table.find_type(p[1])
+        if type: p[1] = type
         p[0] = Node(p, 'type_specifier')
+        p[0].type = type
+        for child in p[0].children: child.type = type 
+        print p[0].children
     
     def p_struct_or_union_specifier(self, p):
         '''struct_or_union_specifier : struct_or_union identifier '{' struct_declaration_list '}'
@@ -316,6 +268,7 @@ class C_Parser(object):
         '''declarator : declarator2
                     | pointer declarator2'''
         p[0] = Node(p, 'declarator')
+        if len(p) == 2: p[0].identifier = p[1].identifier
     
     def p_declarator2(self, p):
         '''declarator2 : identifier
@@ -325,7 +278,12 @@ class C_Parser(object):
                     | declarator2 '(' ')'
                     | declarator2 '(' parameter_type_list ')'
                     | declarator2 '(' parameter_identifier_list ')'  '''
+        if hasattr(p[1], 'identifier'):
+            identifier = p[1].identifier
+        elif hasattr(p[2], 'identifier'):
+            identifier = p[2].identifier
         p[0] = Node(p, 'declarator2')
+        p[0].identifier = identifier
     
     def p_pointer(self, p):
         '''pointer : '*'
@@ -497,7 +455,9 @@ class C_Parser(object):
     
     def p_identifier(self, p):
         '''identifier : IDENTIFIER'''
+        p[1] = self.symbol_table.find_symbol(p[1])
         p[0] = Node(p, 'identifier')
+        p[0].identifier = p[1]
     
     def p_error(self, p):
         sys.stderr.write('ERROR' + str(p))
