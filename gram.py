@@ -166,16 +166,16 @@ class C_Parser(object):
         if p[1].symbol.symbol == 'type_specifier':
             if len(p) == 3: 
                 print p[1], p[2]
-                try: type_name = p[1].type.type_name + ' ' + p[2].type.type_name
+                try: type_name = p[1].attrs.type.type_name + ' ' + p[2].attrs.type.type_name
                 except: type_name = None
             else:
                 print p[1] 
-                type_name = p[1].type.type_name
+                type_name = p[1].attrs.type.type_name
         else: type_name = None
         print "'" + str(type_name) +"'", self.typedef_table.find_type(type_name)
         p[0] = Node(p, 'declaration_specifiers')
-        p[0].type = self.typedef_table.find_type(type_name)
-        print p[0].type
+        p[0].attrs.type = self.typedef_table.find_type(type_name)
+        print p[0].attrs.type
     
     def p_init_declarator_list(self, p):
         '''init_declarator_list : init_declarator
@@ -213,8 +213,8 @@ class C_Parser(object):
         type = self.typedef_table.find_type(p[1])
         if type: p[1] = type
         p[0] = Node(p, 'type_specifier')
-        p[0].type = type
-        for child in p[0].children: child.type = type 
+        p[0].attrs.type = type
+        for child in p[0].children: child.attrs.type = type 
         print p[0].children
     
     def p_struct_or_union_specifier(self, p):
@@ -278,12 +278,12 @@ class C_Parser(object):
                     | declarator2 '(' ')'
                     | declarator2 '(' parameter_type_list ')'
                     | declarator2 '(' parameter_identifier_list ')'  '''
-        if hasattr(p[1], 'identifier'):
-            identifier = p[1].identifier
-        elif hasattr(p[2], 'identifier'):
-            identifier = p[2].identifier
+        if p[1].__class__ == Node:
+            identifier = p[1].attrs.identifier
+        else:
+            identifier = p[2].attrs.identifier
         p[0] = Node(p, 'declarator2')
-        p[0].identifier = identifier
+        p[0].attrs.identifier = identifier
     
     def p_pointer(self, p):
         '''pointer : '*'
@@ -457,7 +457,7 @@ class C_Parser(object):
         '''identifier : IDENTIFIER'''
         p[1] = self.symbol_table.find_symbol(p[1])
         p[0] = Node(p, 'identifier')
-        p[0].identifier = p[1]
+        p[0].attrs.identifier = p[1]
     
     def p_error(self, p):
         sys.stderr.write('ERROR' + str(p))

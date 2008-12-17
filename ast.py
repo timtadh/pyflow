@@ -29,13 +29,17 @@ class Value(object):
 
 class Attributes(object):
     
-    def __init__(self):
-        pass
+    def __init__(self): pass
+    
+    def __getattribute__(self, attr):
+        try: return super(Attributes, self).__getattribute__(attr)
+        except: return None
 
 class Node(object):
     '''Represents a vertice on the AST'''
     
     def __init__(self, production=None, symbol=''):
+        self.attrs = Attributes()
         if not production:
             self.children = []
         else:
@@ -75,6 +79,6 @@ class Node(object):
     
     def __str__(self):
         s = str(self.symbol)
-        if self.type: s += ', ' + str(self.type)
-        if self.identifier: s += ', ' + str(self.identifier)
+        if self.attrs.type: s += ', ' + str(self.attrs.type)
+        if self.attrs.identifier: s += ', ' + str(self.attrs.identifier)
         return '"' + s + '"'
