@@ -9,6 +9,9 @@ class ScalarType(object):
             size = size in bytes'''
         self.type_name = type_name
         self.size = size
+    
+    def __str__(self):
+        return '<' + str(self.type_name) + ', ' + str(self.size) + '>'
 
 class VectorType(ScalarType):
     '''This represents arrays ie int[5] or int[2][3][4][5] doesn't matter the demension'''
@@ -20,6 +23,9 @@ class VectorType(ScalarType):
         super(VectorType, self).__init__(base_type.type_name, base_type.size)
         self.length = length
         self.size = self.length * self.size
+    
+    def __str__(self):
+        return '<' + str(self.type_name) + ', ' + str(self.size) + ', ' + str(self.length) + '>'
 
 class UnionType(ScalarType):
     '''Represents C unions'''
@@ -33,6 +39,9 @@ class UnionType(ScalarType):
         for member in members:
             if longest < member.type.size: longest = member.type.size
         super(UnionType, self).__init__(type_name, longest)
+    
+    def __str__(self):
+        return '<' + str(self.type_name) + ', ' + str(self.size) + ', union>'
 
 class StructType(UnionType):
     '''Represents C structs'''
@@ -43,6 +52,9 @@ class StructType(UnionType):
             members = a list of Identifiers'''
         super(StructType, self).__init__(type_name, members)
         self.size = len(self.members) * self.size
+    
+    def __str__(self):
+        return '<' + str(self.type_name) + ', ' + str(self.size) + ', struct>'
 
 class FunctionType(object):
     '''Represents functions'''
@@ -53,6 +65,9 @@ class FunctionType(object):
         self.return_type = return_type
         self.parameters = parameters
         self.code = code
+    
+    def __str__(self):
+        return '<' + str(self.name) + ', ' + str(self.size) + ', struct>'
 
 class Identifier(object):
     '''Represents an identifier. Each Identifier has a name, value, type and address'''
@@ -63,3 +78,6 @@ class Identifier(object):
         self.value = value
         self.type = type
         self.address = address
+    
+    def __str__(self):
+        return str(self.name) + ' -> ' + str(self.value)
