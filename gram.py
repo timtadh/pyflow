@@ -375,7 +375,7 @@ class C_Parser(object):
     def p_left_bracket(self, p):
         '''left_bracket : '{' '''
         p[0] = Node(p, 'left_bracket')
-        print self.symbol_table
+        #print self.symbol_table
         self.symbol_table.push_level()
         
     def p_right_bracket(self, p):
@@ -413,23 +413,23 @@ class C_Parser(object):
     
     def p_iteration_statement(self, p):
         '''iteration_statement : WHILE '(' expr ')' statement
-                            | DO statement WHILE '(' expr ')' ';'
-                            | FOR '(' ';' ';' ')' statement
-                            | FOR '(' ';' ';' expr ')' statement
-                            | FOR '(' ';' expr ';' ')' statement
-                            | FOR '(' ';' expr ';' expr ')' statement
-                            | FOR '(' expr ';' ';' ')' statement
-                            | FOR '(' expr ';' ';' expr ')' statement
-                            | FOR '(' expr ';' expr ';' ')' statement
-                            | FOR '(' expr ';' expr ';' expr ')' statement'''
+                               | DO statement WHILE '(' expr ')' ';'
+                               | FOR '(' ';' ';' ')' statement
+                               | FOR '(' ';' ';' expr ')' statement
+                               | FOR '(' ';' expr ';' ')' statement
+                               | FOR '(' ';' expr ';' expr ')' statement
+                               | FOR '(' expr ';' ';' ')' statement
+                               | FOR '(' expr ';' ';' expr ')' statement
+                               | FOR '(' expr ';' expr ';' ')' statement
+                               | FOR '(' expr ';' expr ';' expr ')' statement'''
         p[0] = Node(p, 'iteration_statement')
     
     def p_jump_statement(self, p):
         '''jump_statement : GOTO identifier ';'
-                        | CONTINUE ';'
-                        | BREAK ';'
-                        | RETURN ';'
-                        | RETURN expr ';' '''
+                          | CONTINUE ';'
+                          | BREAK ';'
+                          | RETURN ';'
+                          | RETURN expr ';' '''
         p[0] = Node(p, 'jump_statement')
     
     def p_code(self, p):
@@ -449,7 +449,15 @@ class C_Parser(object):
     def p_function_definition(self, p):
         '''function_definition : declarator function_body
                                | declaration_specifiers declarator function_body'''
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'declaration_specifiers':
+            return_type = p[1].attrs.type
+            identifier = p[2].attrs.identifier
+        else:
+            return_type = self.typedef_table.find_type('int')
+            identifier = p[1].attrs.identifier
+        identifier.type = c_types.FunctionType(identifier.name, return_type)
         p[0] = Node(p, 'function_definition')
+        p[0].attrs.identifier = identifier
     
     def p_function_body(self, p):
         '''function_body : compound_statement

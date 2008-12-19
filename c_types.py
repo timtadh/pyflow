@@ -83,4 +83,4 @@ class Identifier(object):
     def __repr__(self): return self.__str__()
     
     def __str__(self):
-        return str(self.name) + ' -> ' + str(self.value)
+        return str(self.name) + ' -> ' + str(self.type)
