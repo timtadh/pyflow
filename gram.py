@@ -23,6 +23,8 @@ class C_Parser(object):
                         | STRING_LITERAL
                         | '(' expr ')' '''
         p[0] = Node(p, 'primary_expr')
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'identifier':
+            p[0].attrs.identifier = self.symbol_table.find_symbol(p[1].attrs.identifier)
     
     def p_postfix_expr(self, p):
         '''postfix_expr : primary_expr
@@ -274,7 +276,11 @@ class C_Parser(object):
                     | declarator2 '(' parameter_type_list ')'
                     | declarator2 '(' parameter_identifier_list ')'  '''
         if p[1].__class__ == Node:
-            identifier = p[1].attrs.identifier
+            if p[1].symbol.symbol == 'identifier':
+                identifier = c_types.Identifier(p[1].attrs.identifier)
+                self.symbol_table.create_symbol(identifier)
+            else:
+                identifier = p[1].attrs.identifier
         else:
             identifier = p[2].attrs.identifier
         p[0] = Node(p, 'declarator2')
@@ -453,13 +459,8 @@ class C_Parser(object):
     
     def p_identifier(self, p):
         '''identifier : IDENTIFIER'''
-        i = self.symbol_table.find_symbol(p[1])
-        if not i: 
-            i = c_types.Identifier(p[1])
-            self.symbol_table.create_symbol(i)
-        p[1] = i
         p[0] = Node(p, 'identifier')
-        p[0].attrs.identifier = i
+        p[0].attrs.identifier = p[1]
     
     def p_error(self, p):
         sys.stderr.write('ERROR' + str(p))
