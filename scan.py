@@ -40,9 +40,9 @@ class C_Lexer(object):
     identifier = '(' + L + ')((' + L + ')|(' + D + '))*'
     @TOKEN(identifier)
     def t_IDENTIFIER(self, token):
-        if not reserved.has_key(token.value):
-            if not self.symbol_table.find_symbol(token.value):
-                self.symbol_table.create_symbol(c_types.Identifier(token.value))
+        #if not reserved.has_key(token.value):
+            #if not self.symbol_table.find_symbol(token.value):
+                #self.symbol_table.create_symbol(c_types.Identifier(token.value))
         token.type = reserved.get(token.value,'IDENTIFIER')
         return token
     

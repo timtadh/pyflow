@@ -1,7 +1,7 @@
 int main()
 {
   short int c, n1;
-
+  
   n1 = 0;
   while ((c = getchar()) != EOF)
   {
@@ -11,4 +11,9 @@ int main()
     }
   }
   printf("Number of Lines: %d\n", n1); 
+}
+
+int sub()
+{
+    int x;
 }

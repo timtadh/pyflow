@@ -1,6 +1,7 @@
 '''Defines the grammar and parser for the compiler. Equivalent of yacc.y'''
 import ply.yacc as yacc
 import sys
+import c_types
 from scan import C_Lexer
 from ast import *
 
@@ -368,10 +369,13 @@ class C_Parser(object):
     def p_left_bracket(self, p):
         '''left_bracket : '{' '''
         p[0] = Node(p, 'left_bracket')
+        print self.symbol_table
+        self.symbol_table.push_level()
         
     def p_right_bracket(self, p):
         '''right_bracket : '}' '''
         p[0] = Node(p, 'right_bracket')
+        self.symbol_table.pop_level()
     
     def p_compound_statement(self, p):
         '''compound_statement : left_bracket right_bracket
@@ -449,9 +453,13 @@ class C_Parser(object):
     
     def p_identifier(self, p):
         '''identifier : IDENTIFIER'''
-        p[1] = self.symbol_table.find_symbol(p[1])
+        i = self.symbol_table.find_symbol(p[1])
+        if not i: 
+            i = c_types.Identifier(p[1])
+            self.symbol_table.create_symbol(i)
+        p[1] = i
         p[0] = Node(p, 'identifier')
-        p[0].attrs.identifier = p[1]
+        p[0].attrs.identifier = i
     
     def p_error(self, p):
         sys.stderr.write('ERROR' + str(p))

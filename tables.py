@@ -4,25 +4,66 @@ import c_types
 class SymbolTable(object):
     
     def __init__(self):
-        self.table = dict()
+        self.levels = list()
+        self.global_space = dict()
+        self.tables = list()
+        self.current_level = -1 #negative one represents the global namespace
+        self.current_table = self.global_space
+        #self.current_namespace = 0 #zero represents the first namespace encounter
+    
+    def __namespace(self, level, count):
+        return float(str(level) + '.' + str(count))
+    
+    def current_namespace(self):
+        return self.__namespace(self.current_level, self.levels[self.current_level])
+    
+    def push_level(self):
+        self.current_level += 1
+        if self.current_level <= len(self.levels): 
+            self.levels.append(-1)
+            self.tables.append(list())
+        self.levels[self.current_level] += 1
+        #self.tables.update({self.current_namespace():dict()})
+        self.tables[self.current_level].append(dict())
+    
+    def pop_level(self):
+        if self.current_level != -1: self.current_level -= 1
+    
+    def top_current_table(self):
+        if self.current_level >= 0:
+            return self.tables[self.current_level][self.levels[self.current_level]]
+        else:
+            return self.global_space
+        
+    def get_current_tables(self):
+        level = self.current_level
+        tables = list()
+        while level >= 0:
+            tables.append(self.tables[level][self.levels[level]])
+            level -= 1
+        tables.append(self.global_space)
+        return tables
     
     def create_symbol(self, identifier):
         '''create_symbol(identifier):
             symbol = c_types.Identifier'''
-        if self.table.has_key(identifier.name):
+        current_table = self.top_current_table()
+        if current_table.has_key(identifier.name):
             raise Exception, 'identifier "%s" was already in table' % identifier.name
-        self.table.update({identifier.name:identifier})
+        current_table.update({identifier.name:identifier})
     
     def find_symbol(self, name):
         '''find_symbol(name):
             name = c_types.Identifier.name whatever was in the name field of the id you are 
                    looking for
            returns c_types.Identifier or None if the symbol was not found'''
-        if self.table.has_key(name): return self.table[name]
-        else: return None
+        current_tables = self.get_current_tables()
+        for table in current_tables:
+            if table.has_key(name): return table[name]
+        return None
     
     def __str__(self):
-        return str(self.table)
+        return str(self.global_space) + ', ' + str(self.tables)
 
 class TypedefTable(object):
     
