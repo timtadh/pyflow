@@ -9,7 +9,7 @@ def construct_basic_types(typedef_table):
     typedef_table.create_type(c_types.ScalarType('int', 4))
     typedef_table.create_type(c_types.ScalarType('long', 4))
     typedef_table.create_type(c_types.ScalarType('float', 4))
-    typedef_table.create_type(c_types.ScalarType('pointer', 4))
+    #typedef_table.create_type(c_types.PointerType('pointer', 4))
     typedef_table.create_type(c_types.ScalarType('double', 8))
     typedef_table.create_type(c_types.ScalarType('long long', 8))
 

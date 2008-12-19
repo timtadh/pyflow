@@ -160,6 +160,7 @@ class C_Parser(object):
         '''declaration : declaration_specifiers ';'
                     | declaration_specifiers init_declarator_list ';'  '''
         p[0] = Node(p, 'declaration')
+        p[0].attrs.type = p[1].attrs.type
     
     def p_declaration_specifiers(self, p):
         '''declaration_specifiers : storage_class_specifier
@@ -179,11 +180,22 @@ class C_Parser(object):
         '''init_declarator_list : init_declarator
                                 | init_declarator_list ',' init_declarator'''
         p[0] = Node(p, 'init_declarator_list')
+        p[0].attrs.type = p[-1].attrs.type
     
     def p_init_declarator(self, p):
         '''init_declarator : declarator
                            | declarator '=' initializer'''
         p[0] = Node(p, 'init_declarator')
+        i = -1
+        while p[i].__class__ != Node: i -= 1
+        type = p[i].attrs.type
+        print p[i]
+        if len(p) == 4: value = p[3].attrs.value
+        else: value = None
+        identifier = p[1].attrs.identifier
+        identifier.type = type
+        identifier.value = value
+        p[0].attrs.identifier = identifier
     
     def p_storage_class_specifier(self, p):
         '''storage_class_specifier : TYPEDEF
@@ -266,6 +278,11 @@ class C_Parser(object):
                     | pointer declarator2'''
         p[0] = Node(p, 'declarator')
         if len(p) == 2: p[0].attrs.identifier = p[1].attrs.identifier
+        else:
+            type = p[2].attrs.identifier.type
+            pointer = c_types.PointerType(self.typedef_table.find_type('int'), type)
+            p[0].attrs.identifier = p[2].attrs.identifier
+            p[0].attrs.identifier.type = pointer
     
     def p_declarator2(self, p):
         '''declarator2 : identifier

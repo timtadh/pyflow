@@ -13,6 +13,7 @@ class ScalarType(object):
     
     def __str__(self):
         return '<' + str(self.type_name) + ', ' + str(self.size) + '>'
+    
 
 class VectorType(ScalarType):
     '''This represents arrays ie int[5] or int[2][3][4][5] doesn't matter the demension'''
@@ -26,7 +27,7 @@ class VectorType(ScalarType):
         self.size = self.length * self.size
     
     def __str__(self):
-        return '<' + str(self.type_name) + ', ' + str(self.size) + ', ' + str(self.length) + '>'
+        return '<' + str(self.type_name) + ', ' + str(self.size) + ', ' + str(self.length) + 'vector>'
 
 class UnionType(ScalarType):
     '''Represents C unions'''
@@ -70,11 +71,29 @@ class FunctionType(object):
     def __str__(self):
         return '<' + str(self.name) + ', function>'
 
+class PointerType(ScalarType):
+    '''This represents the pointer type.'''
+    
+    def __init__(self, base_type, target_type=None):
+        '''PointerType(base_type, target_type=None):
+            base_type = usually whatever the system is defining as an int.
+            target_type = the type of the target of the pointer'''
+        super(PointerType, self).__init__(base_type.type_name, base_type.size)
+        self.target_type = target_type
+    
+    def __str__(self):
+        return '<' + str(self.type_name) + ', ' + str(self.target_type) + ', ' + 'pointer>'
+
 class Identifier(object):
     '''Represents an identifier. Each Identifier has a name, value, type and address'''
     
     def __init__(self, name, value=None, type=None, address=None):
-        '''Identifier(name, value=None, type=None, address=None)'''
+        '''Identifier(name, value=None, type=None, address=None)
+            name = the name of the identifier
+            value = the value it is set to, this does not have to be contant it can be another 
+                    identifier
+            type = the type of the identifier
+            address = where this identifier is stored.'''
         self.name = name
         self.value = value
         self.type = type
