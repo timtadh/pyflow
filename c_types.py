@@ -1,4 +1,5 @@
 '''Classes representing C types for pyflow'''
+debug = 1
 
 class ScalarType(object):
     '''This represents atomic types like int, long, float, char etc...'''
@@ -102,4 +103,5 @@ class Identifier(object):
     def __repr__(self): return self.__str__()
     
     def __str__(self):
-        return str(self.name) + ' -> ' + str(self.type)
+        if debug: return str(self.name) + ' -> ' + str(self.type)
+        else: return str(self.name)
