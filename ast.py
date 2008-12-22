@@ -82,4 +82,5 @@ class Node(object):
         s = str(self.symbol)
         if self.attrs.type: s += ', ' + str(self.attrs.type)
         if self.attrs.identifier: s += ', ' + str(self.attrs.identifier)
+        if self.attrs.value: s += ', ' + str(self.attrs.value)
         return '"' + s + '"'

@@ -50,35 +50,35 @@ class C_Lexer(object):
     @TOKEN(const_char)
     def t_CONST_CHAR(self, token):
         token.type = 'CONSTANT'
-        token.value = token.value[1:-1]
+        token.value = c_types.Constant(token.value[1:-1], self.typedef_table.find_type('char'))
         return token
     
     const_hex = '0[xX](' + H + ')+(' + IS + ')?'
     @TOKEN(const_hex)
     def t_CONST_HEX(self, token):
         token.type = 'CONSTANT'
-        token.value = int(token.value, 16)
+        token.value = c_types.Constant(int(token.value, 16), self.typedef_table.find_type('int'))
         return token
     
     const_float1 = '(' + D + ')+' + '(' + E + ')' + '(' + FS + ')?'#{D}+{E}{FS}?
     @TOKEN(const_float1)
     def t_CONST_FLOAT1(self, token):
         token.type = 'CONSTANT'
-        token.value = float(token.value)
+        token.value = c_types.Constant(float(token.value), self.typedef_table.find_type('float'))
         return token
     
     const_float2 = '(' + D + ')*\.(' + D + ')+(' + E + ')?' + '(' + FS + ')?'#{D}*"."{D}+({E})?{FS}?
     @TOKEN(const_float2)
     def t_CONST_FLOAT2(self, token):
         token.type = 'CONSTANT'
-        token.value = float(token.value)
+        token.value = c_types.Constant(float(token.value), self.typedef_table.find_type('float'))
         return token
     
     const_float3 = '(' + D + ')+\.(' + D + ')*(' + E + ')?' + '(' + FS + ')?'#{D}+"."{D}*({E})?{FS}?
     @TOKEN(const_float3)
     def t_CONST_FLOAT3(self, token):
         token.type = 'CONSTANT'
-        token.value = float(token.value)
+        token.value = c_types.Constant(float(token.value), self.typedef_table.find_type('float'))
         return token
     
     const_dec_oct = '(' + D + ')+(' + IS + ')?'
@@ -86,9 +86,9 @@ class C_Lexer(object):
     def t_CONST_DEC_OCT(self, token):
         token.type = 'CONSTANT'
         if len(token.value) > 1 and token.value[0] == '0':
-            token.value = int(token.value, 8)
+            token.value = c_types.Constant(int(token.value, 8), self.typedef_table.find_type('int'))
         else:
-            token.value = int(token.value, 10)
+            token.value = c_types.Constant(int(token.value, 10),self.typedef_table.find_type('int'))
         return token
         
     string_literal = r'\"(\\.|[^\\"])*\"'

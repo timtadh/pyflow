@@ -105,3 +105,17 @@ class Identifier(object):
     def __str__(self):
         if debug: return str(self.name) + ' -> ' + str(self.type)
         else: return str(self.name)
+
+class Constant(object):
+    '''Represents a constant'''
+    
+    def __init__(self, value, type=None):
+        '''Identifier(name, value=None, type=None, address=None)
+            value = this needs to be a constant
+            type = the type of the constant should be a ScalarType'''
+        self.value = value
+        self.type = type
+        assert type and type.__class__ ==  ScalarType
+    
+    def __str__(self): 
+        if debug: return '<' + str(self.value) + ', ' + str(self.type) + ', constant>'

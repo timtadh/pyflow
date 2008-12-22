@@ -1,7 +1,7 @@
 '''Defines the grammar and parser for the compiler. Equivalent of yacc.y'''
 import ply.yacc as yacc
 import sys
-import c_types
+import c_types, code
 from scan import C_Lexer
 from ast import *
 
@@ -24,7 +24,11 @@ class C_Parser(object):
                         | '(' expr ')' '''
         p[0] = Node(p, 'primary_expr')
         if p[1].__class__ == Node and p[1].symbol.symbol == 'identifier':
+            p[0].attrs.code = []
             p[0].attrs.identifier = self.symbol_table.find_symbol(p[1].attrs.identifier)
+        if p[1].__class__ == c_types.Constant:
+            p[0].attrs.code = []#[code.Statement(code.CopyType)]
+            p[0].attrs.value = p[1]
     
     def p_postfix_expr(self, p):
         '''postfix_expr : primary_expr
