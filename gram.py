@@ -138,6 +138,19 @@ class C_Parser(object):
                     | shift_expr LEFT_OP additive_expr
                     | shift_expr RIGHT_OP additive_expr'''
         p[0] = Node(p, 'shift_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'additive_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
+        elif p[1].__class__ == Node and p[1].symbol.symbol == 'shift_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.code += p[3].attrs.code
+            temp, statements = self.irgen.binary_operation(p[2], p[1].attrs.identifier, 
+                                                                              p[3].attrs.identifier)
+            p[0].attrs.code += statements
+            print temp
+            p[0].attrs.identifier = temp
     
     def p_relational_expr(self, p):
         '''relational_expr : shift_expr
@@ -146,47 +159,162 @@ class C_Parser(object):
                         | relational_expr LE_OP shift_expr
                         | relational_expr GE_OP shift_expr'''
         p[0] = Node(p, 'relational_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'shift_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
+        elif p[1].__class__ == Node and p[1].symbol.symbol == 'relational_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.code += p[3].attrs.code
+            temp, statements = self.irgen.binary_operation(p[2], p[1].attrs.identifier, 
+                                                                              p[3].attrs.identifier)
+            p[0].attrs.code += statements
+            print temp
+            p[0].attrs.identifier = temp
     
     def p_equality_expr(self, p):
         '''equality_expr : relational_expr
                         | equality_expr EQ_OP relational_expr
                         | equality_expr NE_OP relational_expr'''
         p[0] = Node(p, 'equality_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'relational_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
+        elif p[1].__class__ == Node and p[1].symbol.symbol == 'equality_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.code += p[3].attrs.code
+            temp, statements = self.irgen.binary_operation(p[2], p[1].attrs.identifier, 
+                                                                              p[3].attrs.identifier)
+            p[0].attrs.code += statements
+            print temp
+            p[0].attrs.identifier = temp
     
     def p_and_expr(self, p):
         '''and_expr  : equality_expr
                     | and_expr '&' equality_expr'''
         p[0] = Node(p, 'and_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'equality_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
+        elif p[1].__class__ == Node and p[1].symbol.symbol == 'and_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.code += p[3].attrs.code
+            temp, statements = self.irgen.binary_operation(p[2], p[1].attrs.identifier, 
+                                                                              p[3].attrs.identifier)
+            p[0].attrs.code += statements
+            print temp
+            p[0].attrs.identifier = temp
     
     def p_exclusive_or_expr(self, p):
         '''exclusive_or_expr : and_expr
                             | exclusive_or_expr '^' and_expr'''
         p[0] = Node(p, 'exclusive_or_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'and_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
+        elif p[1].__class__ == Node and p[1].symbol.symbol == 'exclusive_or_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.code += p[3].attrs.code
+            temp, statements = self.irgen.binary_operation(p[2], p[1].attrs.identifier, 
+                                                                              p[3].attrs.identifier)
+            p[0].attrs.code += statements
+            print temp
+            p[0].attrs.identifier = temp
     
     def p_inclusive_or_expr(self, p):
         '''inclusive_or_expr : exclusive_or_expr
                             | inclusive_or_expr '|' exclusive_or_expr'''
         p[0] = Node(p, 'inclusive_or_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'exclusive_or_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
+        elif p[1].__class__ == Node and p[1].symbol.symbol == 'inclusive_or_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.code += p[3].attrs.code
+            temp, statements = self.irgen.binary_operation(p[2], p[1].attrs.identifier, 
+                                                                              p[3].attrs.identifier)
+            p[0].attrs.code += statements
+            print temp
+            p[0].attrs.identifier = temp
     
     def p_logical_and_expr(self, p):
         '''logical_and_expr : inclusive_or_expr
                             | logical_and_expr AND_OP inclusive_or_expr'''
         p[0] = Node(p, 'logical_and_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'inclusive_or_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
+        elif p[1].__class__ == Node and p[1].symbol.symbol == 'logical_and_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.code += p[3].attrs.code
+            temp, statements = self.irgen.binary_operation(p[2], p[1].attrs.identifier, 
+                                                                              p[3].attrs.identifier)
+            p[0].attrs.code += statements
+            print temp
+            p[0].attrs.identifier = temp
     
     def p_logical_or_expr(self, p):
         '''logical_or_expr : logical_and_expr
                         | logical_or_expr OR_OP logical_and_expr'''
         p[0] = Node(p, 'logical_or_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'logical_and_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
+        elif p[1].__class__ == Node and p[1].symbol.symbol == 'logical_or_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.code += p[3].attrs.code
+            temp, statements = self.irgen.binary_operation(p[2], p[1].attrs.identifier, 
+                                                                              p[3].attrs.identifier)
+            p[0].attrs.code += statements
+            print temp
+            p[0].attrs.identifier = temp
     
     def p_conditional_expr(self, p):
         '''conditional_expr : logical_or_expr
-                            | logical_or_expr '?' logical_or_expr ':' conditional_expr'''
+                            | logical_or_expr '?' logical_or_expr ':' conditional_expr'''          #NOT FINISHED
         p[0] = Node(p, 'conditional_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'logical_or_expr' and len(p) == 2:
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
     
     def p_assignment_expr(self, p):
         '''assignment_expr : conditional_expr
                         | unary_expr assignment_operator assignment_expr'''
         p[0] = Node(p, 'assignment_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'conditional_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
+        else:
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.code += p[3].attrs.code
+            if p[2].attrs.operator == '=':
+                temp, statements = self.irgen.copy(p[3].attrs.identifier, p[1].attrs.identifier)
+                p[0].attrs.code += statements
+                p[0].attrs.identifier = temp
+            else:
+                temp, statements = self.irgen.binary_operation(p[2].attrs.operator[0], p[1].attrs.identifier, 
+                                                                              p[3].attrs.identifier)
+                p[0].attrs.code += statements
+                temp, statements = self.irgen.copy(temp, p[1].attrs.identifier)
+                p[0].attrs.code += statements
+                p[0].attrs.identifier = temp
     
     def p_assignment_operator(self, p):
         '''assignment_operator : '='
@@ -201,11 +329,20 @@ class C_Parser(object):
                             | XOR_ASSIGN
                             | OR_ASSIGN'''
         p[0] = Node(p, 'assignment_operator')
+        p[0].attrs.operator = p[1]
     
     def p_expr(self, p):
         '''expr : assignment_expr
                 | expr ',' assignment_expr'''
         p[0] = Node(p, 'expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'assignment_expr':
+            p[0].attrs.code += p[1].attrs.code
+        else:
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.code += p[3].attrs.code
+            
     
     def p_constant_expr(self, p):
         '''constant_expr : conditional_expr'''

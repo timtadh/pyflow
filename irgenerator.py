@@ -37,3 +37,8 @@ class IRGenerator(object):
         statements = [ircode.Statement(ircode.BinaryAssignmentType, result=temp, operator=operator,
                                                           operand_1=operand_1, operand_2=operand_2)]
         return temp, statements
+    
+    def copy(self, source, target):
+        assert source.type == target.type
+        statements = [ircode.Statement(ircode.CopyType, result=target, operand=source)]
+        return target, statements
