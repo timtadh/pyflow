@@ -1,5 +1,5 @@
-extern int printf;
-extern char getchar;
+int printf;
+char getchar;
 int EOF = -1;
 
 int main()

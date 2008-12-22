@@ -160,7 +160,6 @@ class C_Parser(object):
         '''declaration : declaration_specifiers ';'
                     | declaration_specifiers init_declarator_list ';'  '''
         p[0] = Node(p, 'declaration')
-        p[0].attrs.type = p[1].attrs.type
     
     def p_declaration_specifiers(self, p):
         '''declaration_specifiers : storage_class_specifier
