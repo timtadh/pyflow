@@ -143,32 +143,82 @@ class RelationalExpressionConditionalJumpType(StatementType):
         s += 'goto ' + str(statement.label)
         return s
 
-class ParameterType(StatementType):
+class InParameterType(StatementType):
     '''param x'''
-    parameter = 'A constant or c_types.Identifier'
-    fields = ['parameter']
+    param = 'A constant or c_types.Identifier'
+    fields = ['param']
     
     @staticmethod
     def format(statement):
-        assert statement.type == ParameterType
-        s = 'param ' + str(statement.parameter)
+        assert statement.type == InParameterType
+        s = 'inparam ' + str(statement.param)
+        return s
+
+class OutParameterType(StatementType):
+    '''param x'''
+    param = 'A constant or c_types.Identifier'
+    fields = ['param']
+    
+    @staticmethod
+    def format(statement):
+        assert statement.type == OutParameterType
+        s = 'outparam ' + str(statement.param)
         return s
 
 class ProcedureCallType(StatementType):
-    '''param x1
-       param x2
+    '''inparam x1
+       inparam x2
        ...
-       param xn
-       call procedure, n'''
-    parameter_list = 'A list of parameters to be passed into the parameter'
-    procedure = 'The procedure being called'
-    fields = ['parameter_list', 'procedure']
+       inparam xn
+       outparam y1
+       outparam y2
+       ...
+       outparam ym
+       call procedure, n, m'''
+    inparams = 'A list of parameters to be passed into the parameter'
+    outparams = 'A list of parameters to be returned by the parameter'
+    procedure = 'The procedure being called usually a c_types.Identifier'
+    fields = ['inparams', 'outparams', 'procedure']
     
     @staticmethod
     def format(statement):
         assert statement.type == ProcedureCallType
-        s = '\n'.join([ParameterType.format(parameter) for parameter in statement.parameter_list])
-        s += '\n' + 'call ' + str(statement.procedure) + ', ' + str(len(statement.parameter_list))
+        s = '\n'.join([InParameterType.format(param) for param in statement.inparams]) + '\n'
+        s += '\n'.join([OutParameterType.format(param) for param in statement.outparams]) + '\n'
+        s += 'call ' + str(statement.procedure) + ', ' + str(len(statement.inparams))
+        s += ', ' + str(len(statement.outparams))
+        return s
+
+class ProcedureDefinitionType(StatementType):
+    '''procedure f, in, out
+       inparam x1
+       inparam x2
+       ...
+       inparam xn
+       statement 1
+       statement 2
+       ...
+       statement n
+       outparam y1
+       outparam y2
+       ...
+       outparam ym
+       endprocedure'''
+    identifier = 'The procedure being called usually a c_types.Identifier'
+    inparams = 'A list of parameters to be passed into the parameter'
+    outparams = 'A list of parameters to be returned by the parameter'
+    statements = 'A list of statements that define the body of the procedure'
+    fields = ['identifier', 'inparams', 'outparams', 'statements']
+    
+    @staticmethod
+    def format(statement):
+        assert statement.type == ProcedureDefinitionType
+        s = 'procedure ' + str(statement.identifier)
+        s += ', ' + str(len(statement.inparams)) + ', ' + str(len(statement.outparams)) + '\n'
+        s += '\n'.join([InParameterType.format(param) for param in statement.inparams]) + '\n'
+        s += '\n'.join([str(x) for x in statement.statements]) + '\n'
+        s += '\n'.join([OutParameterType.format(param) for param in statement.outparams]) + '\n'
+        s += 'endprocedure'
         return s
 
 class Statement(object):
@@ -194,6 +244,7 @@ if __name__ == '__main__':
     x = c_types.Identifier('x')
     y = c_types.Identifier('y')
     z = c_types.Identifier('z')
+    f = c_types.Identifier('f')
     bin_op = BinaryOperators.addition
     unary_op = UnaryOperators.negate
     rel_op = BinaryOperators.lt
@@ -212,11 +263,27 @@ if __name__ == '__main__':
     s = Statement(RelationalExpressionConditionalJumpType, operand_1=x, operand_2=y, 
                                                            operator=rel_op, label='label1')
     assert str(s) == 'if x < y: goto label1'
-    s = Statement(ParameterType, parameter=x)
-    assert str(s) == 'param x'
+    s = Statement(InParameterType, param=x)
+    assert str(s) == 'inparam x'
+    s = Statement(OutParameterType, param=x)
+    assert str(s) == 'outparam x'
     s = Statement(ProcedureCallType, 
-                  parameter_list=[Statement(ParameterType, parameter=x), 
-                                  Statement(ParameterType, parameter=y)],
-                  procedure='procedure')
-    assert str(s) == 'param x\nparam y\ncall procedure, 2'
-
+                  inparams=[Statement(InParameterType, param=x), 
+                            Statement(InParameterType, param=y)],
+                  outparams=[Statement(OutParameterType, param=z)],
+                  procedure=f)
+    assert str(s) == 'inparam x\ninparam y\noutparam z\ncall f, 2, 1'
+    s = Statement(ProcedureDefinitionType, 
+                  inparams=[Statement(InParameterType, param=x), 
+                            Statement(InParameterType, param=y)],
+                  outparams=[Statement(OutParameterType, param=z)],
+                  identifier=f,
+                  statements=[
+                              Statement(BinaryAssignmentType, result=z, operator=bin_op, 
+                                                                        operand_1=x, operand_2=y),
+                              Statement(UnaryAssignmentType, result=z, operator=unary_op, 
+                                                                                    operand=x),
+                              Statement(CopyType, result=z, operand=x)
+                             ])
+    assert str(s) == 'procedure f, 2, 1\ninparam x\ninparam y\nz = x + y\n' + \
+                     'z = -x\nz = x\noutparam z\nendprocedure'
