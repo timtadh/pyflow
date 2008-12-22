@@ -31,6 +31,9 @@ class UnaryOperators(object):
     address = '&'
     value = '*'
     compliment = '~'
+    inc = '++'
+    dec = '--'
+    not_op = '!'
 
 class StatementType(object):
     '''Base class for three address statement types'''

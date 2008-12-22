@@ -62,6 +62,13 @@ class SymbolTable(object):
             if table.has_key(name): return table[name]
         raise Exception, "Symbol '%s' not in the symbol table -> %s" % (name, str(current_tables))
     
+    def in_table(self, name):
+        try:
+            self.find_symbol(name)
+            return True
+        except:
+            return False
+    
     def __str__(self):
         return str(self.global_space) + ', ' + str(self.tables)
 

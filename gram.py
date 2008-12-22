@@ -1,7 +1,7 @@
 '''Defines the grammar and parser for the compiler. Equivalent of yacc.y'''
 import ply.yacc as yacc
 import sys
-import c_types, code
+import c_types, ircode, irgenerator
 from scan import C_Lexer
 from ast import *
 
@@ -16,6 +16,7 @@ class C_Parser(object):
         self.literals = self.c_lexer.literals
         self.symbol_table = symbol_table
         self.typedef_table = typedef_table
+        self.irgen = irgenerator.IRGenerator(self.symbol_table, self.typedef_table)
 
     def p_primary_expr(self, p):
         '''primary_expr : identifier
@@ -23,12 +24,13 @@ class C_Parser(object):
                         | STRING_LITERAL
                         | '(' expr ')' '''
         p[0] = Node(p, 'primary_expr')
+        p[0].attrs.code = []
         if p[1].__class__ == Node and p[1].symbol.symbol == 'identifier':
-            p[0].attrs.code = []
             p[0].attrs.identifier = self.symbol_table.find_symbol(p[1].attrs.identifier)
         if p[1].__class__ == c_types.Constant:
-            p[0].attrs.code = []#[code.Statement(code.CopyType)]
-            p[0].attrs.value = p[1]
+            temp, statements = self.irgen.load_constant(p[1])
+            p[0].attrs.code += statements
+            p[0].attrs.identifier = temp
     
     def p_postfix_expr(self, p):
         '''postfix_expr : primary_expr
@@ -38,8 +40,13 @@ class C_Parser(object):
                         | postfix_expr '.' identifier
                         | postfix_expr PTR_OP identifier
                         | postfix_expr INC_OP
-                        | postfix_expr DEC_OP'''
+                        | postfix_expr DEC_OP'''                    #NOT FINISHED
         p[0] = Node(p, 'postfix_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'primary_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
     
     def p_argument_expr_list(self, p):
         '''argument_expr_list : assignment_expr
@@ -52,8 +59,18 @@ class C_Parser(object):
                     | DEC_OP unary_expr
                     | unary_operator cast_expr
                     | SIZEOF unary_expr
-                    | SIZEOF '(' type_name ')' '''
+                    | SIZEOF '(' type_name ')' '''                   #NOT FINISHED
         p[0] = Node(p, 'unary_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'postfix_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
+        elif p[1].__class__ == Node and p[1].symbol.symbol == 'unary_operator':
+            p[0].attrs.code += p[2].attrs.code
+            temp, statements = self.irgen.unary_operation(p[1].attrs.operator, p[2].attrs.identifier)
+            p[0].attrs.code += statements
+            p[0].attrs.identifier = temp
     
     def p_unary_operator(self, p):
         '''unary_operator : '&'
@@ -63,11 +80,19 @@ class C_Parser(object):
                         | '~'
                         | '!' '''
         p[0] = Node(p, 'unary_operator')
+        p[0].attrs.operator = p[1]
+        
     
     def p_cast_expr(self, p):
         '''cast_expr  : unary_expr
-                    | '(' type_name ')' cast_expr'''
+                    | '(' type_name ')' cast_expr'''                #NOT FINISHED
         p[0] = Node(p, 'cast_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'unary_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
+        
     
     def p_multiplicative_expr(self, p):
         '''multiplicative_expr : cast_expr
@@ -75,12 +100,38 @@ class C_Parser(object):
                             | multiplicative_expr '/' cast_expr
                             | multiplicative_expr '%' cast_expr'''
         p[0] = Node(p, 'multiplicative_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'cast_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
+        elif p[1].__class__ == Node and p[1].symbol.symbol == 'multiplicative_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.code += p[3].attrs.code
+            temp, statements = self.irgen.binary_operation(p[2], p[1].attrs.identifier, 
+                                                                              p[3].attrs.identifier)
+            p[0].attrs.code += statements
+            print temp
+            p[0].attrs.identifier = temp
     
     def p_additive_expr(self, p):
         '''additive_expr : multiplicative_expr
                         | additive_expr '+' multiplicative_expr
                         | additive_expr '-' multiplicative_expr'''
         p[0] = Node(p, 'additive_expr')
+        p[0].attrs.code = []
+        p[0].attrs.identifier = None
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'multiplicative_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.identifier = p[1].attrs.identifier
+        elif p[1].__class__ == Node and p[1].symbol.symbol == 'additive_expr':
+            p[0].attrs.code += p[1].attrs.code
+            p[0].attrs.code += p[3].attrs.code
+            temp, statements = self.irgen.binary_operation(p[2], p[1].attrs.identifier, 
+                                                                              p[3].attrs.identifier)
+            p[0].attrs.code += statements
+            print temp
+            p[0].attrs.identifier = temp
     
     def p_shift_expr(self, p):
         '''shift_expr : additive_expr
@@ -192,7 +243,7 @@ class C_Parser(object):
         i = -1
         while p[i].__class__ != Node: i -= 1
         type = p[i].attrs.type
-        print p[i]
+        #print p[i]
         if len(p) == 4: value = p[3].attrs.value
         else: value = None
         identifier = p[1].attrs.identifier

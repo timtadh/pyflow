@@ -119,3 +119,4 @@ class Constant(object):
     
     def __str__(self): 
         if debug: return '<' + str(self.value) + ', ' + str(self.type) + ', constant>'
+        else: return str(self.value)
