@@ -62,9 +62,15 @@ def ast_dot(root, path, name="AST"):
     f.write(footer_string)
 
 if __name__ == "__main__":
+    import ast
+    if len(sys.argv) > 1 and sys.argv[1] == 'v': 
+        print 'verbose mode'
+        ast.debug = 1
+    else: ast.debug = 0
     c_parser = main.construct_parser()
     top = c_parser.parse(sys.stdin.read())
     ast_dot(top, "AST.dot")
     print "Running dot..."
     popen_obj = subprocess.Popen(["dot", "-Tpng",  "AST.dot",  "-o",  "AST.png"])
     print c_parser.symbol_table
+    print sys.argv, sys.argv[1]

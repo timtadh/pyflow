@@ -1,5 +1,6 @@
 '''Classes that represent the AST'''
 import c_types
+debug = 1
 
 class TerminalSymbol(object):
     '''Represents a terminal symbol on the AST'''
@@ -81,12 +82,16 @@ class Node(object):
     
     def __str__(self):
         s = str(self.symbol)
-        if self.attrs.type: s += ', ' + str(self.attrs.type)
-        if self.attrs.identifier: s += ', ' + str(self.attrs.identifier)
-        if self.attrs.value: s += ', ' + str(self.attrs.value)
-        c = ''
-        t = c_types.debug
-        c_types.debug = 0
-        if self.attrs.code: c += '\\n'.join([str(line) for line in self.attrs.code])
-        c_types.debug = t
-        return '"' + s + '\\n' + c + '"'
+        if debug:
+            if self.attrs.type: s += ', ' + str(self.attrs.type)
+            if self.attrs.identifier: s += ', ' + str(self.attrs.identifier)
+            if self.attrs.value: s += ', ' + str(self.attrs.value)
+            c = ''
+            t = c_types.debug
+            c_types.debug = 0
+            if self.attrs.code: c += '\\n'.join([str(line) for line in self.attrs.code])
+            c_types.debug = t
+            s = '"' + s + '\\n' + c + '"'
+        else:
+            s = '"' + s + '"'
+        return s

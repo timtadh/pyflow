@@ -612,6 +612,9 @@ class C_Parser(object):
         '''expression_statement : ';'
                                 | expr ';' '''
         p[0] = Node(p, 'expression_statement')
+        p[0].attrs.code = []
+        if p[1].__class__ == Node and p[1].symbol.symbol == 'expr':
+            p[0].attrs.code += p[1].attrs.code
     
     def p_selection_statement(self, p):
         '''selection_statement : IF '(' expr ')' statement

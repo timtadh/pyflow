@@ -32,6 +32,7 @@ class IRGenerator(object):
         return temp, statements
     
     def binary_operation(self, operator, operand_1, operand_2):
+        print operator, operand_1, operand_2
         assert operand_1.type == operand_2.type
         temp = self.next_temporary(operand_1.type)
         statements = [ircode.Statement(ircode.BinaryAssignmentType, result=temp, operator=operator,
